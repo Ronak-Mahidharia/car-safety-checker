@@ -1,0 +1,25 @@
+[project]
+name = "carsafety"
+version = "0.1.0"
+description = "Match a car problem to official NHTSA recalls and owner complaints, with measured accuracy."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+  "pandas>=3.0",
+  "scikit-learn>=1.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=9.1"]
+
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
