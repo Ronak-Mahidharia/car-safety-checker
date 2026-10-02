@@ -2,7 +2,7 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 2 of 4, plus a hybrid experiment. The AI is built and measured; the website comes next.
+> **Status:** week 3 of 4. The AI is built and measured, and the model for the live demo runs in the browser; the website comes next.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
@@ -56,6 +56,13 @@ Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full 
 - **Each step helped the AI.** For `granite4:3b`, micro F1 went from 0.547 on its own to 0.668 with RAG and 0.701 as a hybrid. For `qwen3:8b`, it went from 0.532 to 0.669 to 0.694.
 - **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` kept pace with the 8.2-billion-parameter `qwen3:8b` and ran about 2.6 times faster.
 
+## The model in the live demo
+The demo runs a small version of the keyword model inside the visitor's browser, so it needs no server and costs nothing to host ([details](docs/results/browser-model.md)):
+- **About 1 MB** (20,000 terms and 8-bit weights), against 78.6 MB for the full model. The vocabulary size was chosen on the 2024 dev split.
+- **Same accuracy:** 0.719 micro F1 on the full test split, the same as the full model.
+- **Same answers in Python and in the browser:** a test checks that the TypeScript version gives exactly the same labels as the Python version on all 1,000 test complaints.
+- **Private:** the problem description is analyzed on the visitor's device and isn't sent anywhere.
+
 ## Reproduce
 Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
 
@@ -72,6 +79,10 @@ ollama pull nomic-embed-text && ollama pull granite4:3b && ollama pull qwen3:8b
 python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
 python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag hybrid --prompt v1 v2
 python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn blend alone rag hybrid --prompt auto   # about 3.5 hours
+
+# Week 3: the browser model (about 1 minute) and its tests (needs Node.js 24)
+python scripts/build_browser_model.py
+cd web && npm ci && npm test
 ```
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
@@ -93,7 +104,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 ## Roadmap
 1. **Week 1:** answer key and baselines (done)
 2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
-3. **Week 3:** the website, an MCP server for AI assistants, and a free live demo
+3. **Week 3:** the browser model (done), the website, an MCP server for AI assistants, and a free live demo
 4. **Week 4:** write-up, demo, and polish
 
 ## License
