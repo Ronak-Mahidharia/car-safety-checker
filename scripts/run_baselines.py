@@ -73,6 +73,12 @@ def main() -> None:
         for name, data in (("test", test), ("sample", sample))
     }
     seconds = time.time() - started
+    # Save the keyword model's answers on the fixed sample, so later steps can compare per complaint.
+    (PROCESSED / "predictions").mkdir(exist_ok=True)
+    sample_sets = predict_sets(model.predict_proba(vectorizer.transform(r["text"] for r in sample)), classes, best)
+    with (PROCESSED / "predictions" / "test-keyword.jsonl").open("w", encoding="utf-8") as out:
+        for r, labels in zip(sample, sample_sets):
+            out.write(json.dumps({"id": r["id"], "labels": sorted(labels)}) + "\n")
 
     def row(name, s):
         return f"| {name} | {s['micro_precision']:.3f} | {s['micro_recall']:.3f} | **{s['micro_f1']:.3f}** | {s['macro_f1']:.3f} | {s['exact_match']:.3f} |"

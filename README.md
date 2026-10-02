@@ -2,29 +2,56 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 1 of 4. The answer key and the baselines are done; the AI comes next.
+> **Status:** week 2 of 4. The AI is built and measured; the website comes next.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
 ## The idea
 When something goes wrong with a car, owners want to know two things: is this a known problem, and is there a recall? NHTSA publishes every safety complaint it receives and every recall, but searching them by hand is slow. This project takes a plain-English description, works out which part of the car it's about, and shows the matching recalls and complaints, with links to the official records.
 
+## How it works
+1. **Find similar complaints.** Every past complaint is turned into an embedding (768 numbers that capture its meaning) with `nomic-embed-text`. A new description is matched against 200,000 past complaints, so a complaint about the same problem is found even when it uses different words.
+2. **Name the component.** A local AI model reads the description along with the 8 most similar past complaints and the components NHTSA recorded for them (retrieval-augmented generation, or RAG). A JSON schema limits its answer to NHTSA's 31 categories.
+3. **Find the recalls.** The vehicle's official recalls for those components are looked up in NHTSA's recall data. Recalls with a "Do Not Drive" or "Park Outside" advisory come first.
+
+Everything runs on your own computer through [Ollama](https://ollama.com), so complaint text never leaves the machine and there is no API cost.
+
 ## How accuracy is measured
 Every NHTSA complaint is labeled with the components it concerns, such as ENGINE or AIR BAGS. That gives a large, official answer key:
 - **Data:** 723,204 vehicle complaints received from Jan 1, 2015 to Sept 28, 2026, with 31 component labels ([answer key](docs/answer-key.md)). NHTSA renamed some categories over the years, so old names are merged into current ones ([`labels.py`](src/carsafety/labels.py)).
-- **Split by date, like real use:** train on complaints received before 2024, tune on 2024, and test on 2025 to 2026. The test is always on complaints the system hasn't seen.
+- **Split by date, like real use:** train on complaints received before 2024, tune on 2024, and test on 2025 to 2026.
+- **Fair testing:** prompt wording and settings were chosen on complaints received in 2024. The fixed 1,000-complaint test sample was used once, for the final numbers.
 - **Metrics:** a complaint can have several labels, so predictions are scored with precision, recall, and F1. Micro F1 pools every label decision; macro F1 averages over labels, so rare components count as much as common ones.
 
-## Results so far: the baselines the AI has to beat
-| Baseline | Micro F1 | Macro F1 | Exact match |
-|---|---|---|---|
-| Most common label | 0.245 | 0.015 | 17.0% |
-| Keyword model (TF-IDF + logistic regression) | 0.719 | 0.438 | 54.8% |
+## Results
+Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full results](docs/results/ai.md)):
 
-Scored on the full test split: 122,100 complaints received from 2025 onward. Details, including the fixed 1,000-complaint sample and per-label scores: [baseline results](docs/results/baselines.md).
+| Approach | Micro F1 | Macro F1 | Exact match | Seconds per complaint |
+|---|---|---|---|---|
+| Keyword model (TF-IDF + logistic regression), the baseline | **0.718** | 0.533 | **55.1%** | under 0.01 |
+| Similar-complaint voting (20 nearest complaints) | 0.625 | 0.439 | 41.7% | under 0.01 |
+| `granite4:3b` on its own | 0.547 | 0.381 | 40.7% | 0.34 |
+| `granite4:3b` with similar examples (RAG) | 0.668 | 0.524 | 54.6% | 1.49 |
+| `qwen3:8b` on its own | 0.532 | 0.462 | 23.2% | 1.06 |
+| `qwen3:8b` with similar examples (RAG) | 0.669 | **0.570** | 34.8% | 3.84 |
+
+**Finding the right recalls.** For 484 of the 1,000 complaints, the vehicle has at least one NHTSA recall for the components NHTSA recorded:
+
+| Approach | Right recalls found | Recalls shown that are right |
+|---|---|---|
+| Keyword model, the baseline | 78.1% | 83.0% |
+| `granite4:3b` with RAG | 73.2% | **85.7%** |
+| `qwen3:8b` with RAG | **83.1%** | 75.1% |
+
+## What the results show
+- **RAG works.** Showing the model 8 similar past complaints with their NHTSA labels raised micro F1 by 12 to 14 points for both models.
+- **The classic keyword model is still the most accurate overall.** It learned NHTSA's labeling habits from 200,000 labeled examples, and it answers in under a hundredth of a second.
+- **For the goal that matters most to drivers, the AI does better on recall.** `qwen3:8b` with RAG found the most right recalls (83.1% against 78.1%), at the cost of showing more extra ones. It's also the best on rare components (macro F1 0.570 against 0.533).
+- **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` matched the 8.2-billion-parameter `qwen3:8b` on micro F1 (0.668 against 0.669) and was about 2.6 times faster with RAG.
+- **Next experiment:** a hybrid in which the AI reviews the keyword model's suggestions, tested the same way.
 
 ## Reproduce
-Requires Python 3.12 or newer.
+Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -33,19 +60,35 @@ python scripts/download_data.py      # about 210 MB from NHTSA
 python scripts/build_answer_key.py   # about 15 seconds
 python scripts/run_baselines.py      # about 1 minute
 python -m pytest
+
+# Week 2: local AI models (about 7.6 GB in total)
+ollama pull nomic-embed-text && ollama pull granite4:3b && ollama pull qwen3:8b
+python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
+python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag --prompt v1 v2
+python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn alone rag --prompt auto   # about 2 hours
 ```
 
+Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
+
+## Models
+| Model | Used for | Size | License |
+|---|---|---|---|
+| `nomic-embed-text` | embeddings | 137M parameters | Apache 2.0 |
+| `granite4:3b` (IBM) | naming components | 3.4B parameters | Apache 2.0 |
+| `qwen3:8b` (Alibaba) | naming components | 8.2B parameters | Apache 2.0 |
+
 ## Data and privacy
-- **Source:** public complaint files published by NHTSA at static.nhtsa.gov. The exact files and their SHA-256 checksums are in the [answer key](docs/answer-key.md).
+- **Source:** public complaint and recall files published by NHTSA at static.nhtsa.gov. The exact complaint files and their SHA-256 checksums are in the [answer key](docs/answer-key.md).
 - **Never read:** the personal fields in those files (the owner's city, state, and partial VIN, the dealer's details, the vehicle operator's name, and the incident state).
 - **Descriptions** are NHTSA's published text. In the committed test sample ([`test_sample.jsonl`](data/sample/test_sample.jsonl)), emails, phone numbers, and full VINs are also masked, and a test checks that on every change.
+- **Local only:** the AI models run on your own computer through Ollama.
 - **Downloaded files stay out of git:** `data/raw/` and `data/processed/` are ignored.
 
 ## Roadmap
 1. **Week 1:** answer key and baselines (done)
-2. **Week 2:** the AI. Identify components from a description, find similar complaints, match recalls, and score it against the baselines.
+2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, recall lookup, and a fair comparison (done)
 3. **Week 3:** the website, an MCP server for AI assistants, and a free live demo
 4. **Week 4:** write-up, demo, and polish
 
 ## License
-Code: MIT (see [LICENSE](LICENSE)). Data: public records published by NHTSA.
+Code: MIT (see [LICENSE](LICENSE)). Data: public records published by NHTSA. Models: see the table above.
