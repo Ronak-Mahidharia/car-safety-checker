@@ -49,3 +49,5 @@ jobs:
         run: npm run typecheck
       - name: Run tests (the browser model must match the Python one)
         run: npm test
+      - name: Build the site
+        run: npm run build

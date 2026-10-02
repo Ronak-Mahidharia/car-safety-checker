@@ -1,0 +1,23 @@
+{
+"scrub": [
+["", ""],
+["[removed]", "[removed]"],
+["Call me at 555-123-4567, (555) 123-4567, 555.123.4567, or 555 123 4567.", "Call me at [removed], [removed], [removed], or [removed]."],
+["With a country code: +1 555 123 4567, +1-555-123-4567, 1 (555) 123-4567, 15551234567.", "With a country code: [removed], [removed], [removed], [removed]."],
+["Digits around it: 1234555-123-45678 and order 98765551234567 stay.", "Digits around it: 1234555-123-45678 and order 98765551234567 stay."],
+["Email john.doe+cars@example.com or JANE_DOE@MAIL.CO.UK, then a period.", "Email [removed] or [removed], then a period."],
+["An email at the end of a sentence: write to john@example.com. Then more text.", "An email at the end of a sentence: write to [removed] Then more text."],
+["Accented email: josé@ejemplo.es and ünal@örnek.com.tr", "Accented email: [removed] and [removed]"],
+["VIN 1HGCM82633A004352 is masked; 1hgcm82633a004352 (lowercase) is not.", "VIN [removed] is masked; 1hgcm82633a004352 (lowercase) is not."],
+["A VIN with I, O, or Q is not a VIN: 1HGCM82633A00435I 1HGCM82633A00435O.", "A VIN with I, O, or Q is not a VIN: 1HGCM82633A00435I 1HGCM82633A00435O."],
+["Too short or long: 1HGCM82633A00435 and 1HGCM82633A0043521.", "Too short or long: 1HGCM82633A00435 and 1HGCM82633A0043521."],
+["Glued to letters: X1HGCM82633A004352 é1HGCM82633A004352 1HGCM82633A004352é", "Glued to letters: X1HGCM82633A004352 é1HGCM82633A004352 1HGCM82633A004352é"],
+["Seventeen digits 12345678901234567 look like a VIN too.", "Seventeen digits [removed] look like a VIN too."],
+["Other digits: ٥٥٥-١٢٣-٤٥٦٧ (Arabic-Indic).", "Other digits: [removed] (Arabic-Indic)."],
+["No-break spaces: 555 123 4567.", "No-break spaces: [removed]."],
+["An email with a number 5551234567@example.com is masked once.", "An email with a number [removed] is masked once."],
+["Dates and money are left alone: 01/15/2024, 2024-01-15, $1,234.56, 120,000 miles.", "Dates and money are left alone: 01/15/2024, 2024-01-15, $1,234.56, 120,000 miles."],
+["THE DEALER (DEALER NAME) SAID CALL 800 555 0199 EXT 12 OR EMAIL SERVICE@DEALER.COM", "THE DEALER (DEALER NAME) SAID CALL [removed] EXT 12 OR EMAIL [removed]"],
+["Line\nbreaks\r\naround 555-123-4567\nand\tTABS", "Line\nbreaks\r\naround [removed]\nand\tTABS"]
+]
+}
