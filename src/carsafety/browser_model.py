@@ -74,3 +74,19 @@ class BrowserModel:
         p = self.probabilities(text)
         chosen = {self.labels[i] for i in np.flatnonzero(p >= self.threshold)}
         return chosen or {self.labels[int(p.argmax())]}
+
+    def top(self, text: str, n: int = 3) -> list[tuple[str, float]]:
+        """The n most likely labels with their probabilities, most likely first (ties: label order)."""
+        p = self.probabilities(text)
+        return [(self.labels[i], float(p[i])) for i in np.argsort(-p, kind="stable")[:n]]
+
+    def vector(self, text: str) -> dict[int, float]:
+        """Steps 1 to 3: the text's tf-idf vector, scaled to length 1, as column -> value. Empty if no term is known."""
+        counts: dict[int, int] = {}
+        for term in terms(text):
+            i = self.index.get(term)
+            if i is not None:
+                counts[i] = counts.get(i, 0) + 1
+        values = {i: (1 + math.log(n)) * float(self.idf[i]) for i, n in counts.items()}
+        length = math.sqrt(sum(v * v for v in values.values()))
+        return {i: v / length for i, v in values.items()} if values else {}

@@ -2,7 +2,7 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 3 of 4. The AI is built and measured, and the website runs entirely in the browser; an MCP server for AI assistants comes next.
+> **Status:** week 3 of 4. The AI is built and measured, the website runs entirely in the browser, and AI assistants can use it through an MCP server.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
@@ -71,6 +71,20 @@ Pick a vehicle, describe the problem, and the page shows the vehicle's recalls a
 - **Designed for any screen:** two columns on wide screens and one on phones, in light and dark mode. It has a skip link, labeled fields, and WCAG AA contrast, and red appears only for NHTSA's safety warnings.
 - **Checked:** 53 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
 
+## The MCP server
+AI assistants that support the Model Context Protocol, such as Claude Desktop and Claude Code, can use the project as tools ([setup and details](docs/mcp.md)). Asked about a car problem, the assistant looks up NHTSA's records instead of guessing.
+- **Four read-only tools:**
+  - `vehicle_models` finds NHTSA's model names
+  - `guess_components` names the likely parts, offline
+  - `vehicle_recalls` lists every recall, warnings first
+  - `similar_complaints` finds the closest owner complaints
+- **The same answers as the website:** on NHTSA's live answers for three vehicles, the Python server and the website's TypeScript agreed on all 27 checks, from recall order to complaint ranking.
+- **Built for safe answers:**
+  - the server tells the assistant never to call a car safe and always to point to NHTSA's VIN lookup
+  - a misspelled model gets "Did you mean: CR-V?", not "no recalls"
+  - complaint text is marked as information, never instructions
+- **Local and private:** it runs on your computer over stdio, and only the vehicle is sent to NHTSA. Built on the official `mcp` 2.2.0 SDK, pinned and checked with `pip-audit`.
+
 ## Reproduce
 Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
 
@@ -93,6 +107,9 @@ python scripts/build_browser_model.py
 python scripts/build_vehicle_index.py && python scripts/build_web_fixtures.py
 cd web && npm ci && npm test
 npm run dev                          # the website at http://localhost:5173
+
+# The MCP server (already installed by requirements-dev.txt; setup for assistants in docs/mcp.md)
+python -m carsafety.mcp_server
 ```
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
@@ -109,13 +126,13 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 - **Never read:** the personal fields in those files (the owner's city, state, and partial VIN, the dealer's details, the vehicle operator's name, and the incident state).
 - **Descriptions** are NHTSA's published text. In the committed test sample ([`test_sample.jsonl`](data/sample/test_sample.jsonl)), emails, phone numbers, and full VINs are also masked, and a test checks that on every change.
 - **Local only:** the AI models run on your own computer through Ollama.
-- **The website** sends only the vehicle's year, make, and model to NHTSA's API. The description never leaves the browser, and complaint records' partial VINs are never kept or shown.
+- **The website and the MCP server** send only the vehicle's year, make, and model to NHTSA's API. Descriptions never leave your device, and complaint records' partial VINs are never kept or shown.
 - **Downloaded files stay out of git:** `data/raw/` and `data/processed/` are ignored.
 
 ## Roadmap
 1. **Week 1:** answer key and baselines (done)
 2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
-3. **Week 3:** the browser model (done), the website (done), an MCP server for AI assistants, and a free live demo
+3. **Week 3:** the browser model (done), the website (done), an MCP server for AI assistants (done), and a free live demo
 4. **Week 4:** write-up, demo, and polish
 
 ## License
