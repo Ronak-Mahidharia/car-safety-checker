@@ -2,7 +2,7 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 3 of 4. The AI is built and measured, and the model for the live demo runs in the browser; the website comes next.
+> **Status:** week 3 of 4. The AI is built and measured, and the website runs entirely in the browser; an MCP server for AI assistants comes next.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
@@ -63,6 +63,13 @@ The demo runs a small version of the keyword model inside the visitor's browser,
 - **Same answers in Python and in the browser:** a test checks that the TypeScript version gives exactly the same labels as the Python version on all 1,000 test complaints.
 - **Private:** the problem description is analyzed on the visitor's device and isn't sent anywhere.
 
+## The website
+Pick a vehicle, describe the problem, and the page shows the vehicle's recalls and the closest owner complaints, each linked to NHTSA's record ([details](docs/website.md)). It needs no server: the model runs in the browser, and the recalls and complaints come live from NHTSA's public API.
+- **Every recall is shown,** with Do Not Drive and Park Outside advisories first, then those for the likely components. NHTSA's API names one component per recall even when a recall covers several, so matching only highlights recalls and never hides one.
+- **Vehicle names are handled carefully.** NHTSA's recall and complaint records often name the same vehicle differently: the 2026 Lucid Air's recalls are under "AIR" and its complaints under "AIR BEV". The picker also lists the 40,093 model names in NHTSA's recall file, and a search covers related names.
+- **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics, and a Content Security Policy limits connections to NHTSA's API.
+- **Checked:** 48 tests in CI (including Python and TypeScript giving the same answers), plus checks of the built site in headless Chrome: no errors, no sideways scrolling at phone width, and WCAG AA contrast in light and dark mode.
+
 ## Reproduce
 Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
 
@@ -80,9 +87,11 @@ python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
 python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag hybrid --prompt v1 v2
 python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn blend alone rag hybrid --prompt auto   # about 3.5 hours
 
-# Week 3: the browser model (about 1 minute) and its tests (needs Node.js 24)
+# Week 3: the browser model (about 1 minute), the website's data files, and the tests (needs Node.js 24)
 python scripts/build_browser_model.py
+python scripts/build_vehicle_index.py && python scripts/build_web_fixtures.py
 cd web && npm ci && npm test
+npm run dev                          # the website at http://localhost:5173
 ```
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
@@ -99,12 +108,13 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 - **Never read:** the personal fields in those files (the owner's city, state, and partial VIN, the dealer's details, the vehicle operator's name, and the incident state).
 - **Descriptions** are NHTSA's published text. In the committed test sample ([`test_sample.jsonl`](data/sample/test_sample.jsonl)), emails, phone numbers, and full VINs are also masked, and a test checks that on every change.
 - **Local only:** the AI models run on your own computer through Ollama.
+- **The website** sends only the vehicle's year, make, and model to NHTSA's API. The description never leaves the browser, and complaint records' partial VINs are never kept or shown.
 - **Downloaded files stay out of git:** `data/raw/` and `data/processed/` are ignored.
 
 ## Roadmap
 1. **Week 1:** answer key and baselines (done)
 2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
-3. **Week 3:** the browser model (done), the website, an MCP server for AI assistants, and a free live demo
+3. **Week 3:** the browser model (done), the website (done), an MCP server for AI assistants, and a free live demo
 4. **Week 4:** write-up, demo, and polish
 
 ## License

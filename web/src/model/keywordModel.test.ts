@@ -39,6 +39,14 @@ describe("KeywordModel", () => {
     expect(mismatches.map((r) => r.id)).toEqual([]);
   });
 
+  it("turns text into a tf-idf vector of length 1, or an empty one for unknown words", () => {
+    const vector = model.vector("The engine hesitates and the check engine light comes on");
+    const length = Math.sqrt([...vector.values()].reduce((sum, v) => sum + v * v, 0));
+    expect(vector.size).toBeGreaterThan(3);
+    expect(length).toBeCloseTo(1, 12);
+    expect(model.vector("zzqx qqzx").size).toBe(0);
+  });
+
   it("gives the same top 3 probabilities as the Python version", () => {
     sample.forEach((r, i) => {
       const ours = model.top(r.text, 3);

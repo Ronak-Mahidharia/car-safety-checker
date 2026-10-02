@@ -55,27 +55,37 @@ export class KeywordModel {
   }
 
   static async load(base = "/model/"): Promise<KeywordModel> {
+    const get = async (name: string) => {
+      const response = await fetch(`${base}${name}`);
+      if (!response.ok) throw new Error(`Couldn't load ${name} (${response.status})`);
+      return response;
+    };
     const [files, buffer] = await Promise.all([
-      fetch(`${base}model.json`).then((r) => r.json() as Promise<ModelFiles>),
-      fetch(`${base}weights.bin`).then((r) => r.arrayBuffer()),
+      get("model.json").then((r) => r.json() as Promise<ModelFiles>),
+      get("weights.bin").then((r) => r.arrayBuffer()),
     ]);
     return new KeywordModel(files, new Int8Array(buffer));
   }
 
-  probabilities(text: string): Float64Array {
+  /** Steps 1 to 3: the text's tf-idf vector, scaled to length 1, as column -> value. Empty if no term is known. */
+  vector(text: string): Map<number, number> {
     const counts = new Map<number, number>();
     for (const term of terms(text)) {
       const i = this.index.get(term);
       if (i !== undefined) counts.set(i, (counts.get(i) ?? 0) + 1);
     }
-    const columns = [...counts.keys()];
-    const values = columns.map((i) => (1 + Math.log(counts.get(i)!)) * this.idf[i]);
-    const length = Math.sqrt(values.reduce((sum, v) => sum + v * v, 0));
+    const values = [...counts].map(([i, n]) => [i, (1 + Math.log(n)) * this.idf[i]] as const);
+    const length = Math.sqrt(values.reduce((sum, [, v]) => sum + v * v, 0));
+    return new Map(values.map(([i, v]) => [i, v / length]));
+  }
+
+  probabilities(text: string): Float64Array {
+    const vector = this.vector(text);
     const probs = new Float64Array(this.labels.length);
     for (let label = 0; label < this.labels.length; label++) {
       let z = this.bias[label];
-      for (let k = 0; k < columns.length; k++) {
-        z += this.weights[label * this.size + columns[k]] * this.scale[label] * (values[k] / length);
+      for (const [column, value] of vector) {
+        z += this.weights[label * this.size + column] * this.scale[label] * value;
       }
       probs[label] = 1 / (1 + Math.exp(-z));
     }
