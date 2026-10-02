@@ -23,6 +23,13 @@ def test_prompt_with_examples_shows_their_labels_and_trims_long_text():
     assert "A" * 50 in prompt and "A" * 51 not in prompt
 
 
+def test_prompt_with_suggestions_lists_them_with_confidence():
+    prompt = build_prompt("THE CAR STALLED.", suggestions=[("ENGINE", 0.81), ("POWER TRAIN", 0.4)])
+    assert "ENGINE 0.81, POWER TRAIN 0.40" in prompt
+    assert prompt.index("keyword model") < prompt.index("Complaint:")
+    assert "keyword model" not in build_prompt("THE CAR STALLED.")
+
+
 @pytest.fixture
 def fake_server(monkeypatch):
     sent = []

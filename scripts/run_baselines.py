@@ -17,6 +17,7 @@ import time
 from collections import Counter
 from pathlib import Path
 
+import joblib
 import numpy as np
 import sklearn
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -73,6 +74,9 @@ def main() -> None:
         for name, data in (("test", test), ("sample", sample))
     }
     seconds = time.time() - started
+    # Save the trained keyword model, so the hybrid approaches can ask it for suggestions.
+    joblib.dump({"vectorizer": vectorizer, "model": model, "classes": classes, "threshold": best},
+                PROCESSED / "keyword_model.joblib")
     # Save the keyword model's answers on the fixed sample, so later steps can compare per complaint.
     (PROCESSED / "predictions").mkdir(exist_ok=True)
     sample_sets = predict_sets(model.predict_proba(vectorizer.transform(r["text"] for r in sample)), classes, best)

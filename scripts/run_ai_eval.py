@@ -8,6 +8,9 @@ Approaches:
          (k and threshold chosen on the 5,000 dev complaints in the index)
   alone  a local AI model reads the complaint and picks categories
   rag    the same, plus the 8 most similar past complaints and their NHTSA labels
+  blend  no AI: a weighted average of the keyword model's probabilities and the vote
+         (weight and threshold chosen on the 5,000 dev complaints; test split only)
+  hybrid an AI model sees the 8 similar complaints and the keyword model's top 3 suggestions
 
 AI answers are cached in data/processed/predictions/, so an interrupted run resumes where it
 stopped. The test split also writes docs/results/ai.md.
@@ -22,8 +25,10 @@ import json
 import statistics
 from pathlib import Path
 
+import joblib
 import numpy as np
 
+from carsafety.combine import blend, top_suggestions, vote_shares
 from carsafety.embeddings import top_k, vote
 from carsafety.llm import PROMPT_VERSION, classify, supports_thinking
 from carsafety.metrics import score
@@ -61,7 +66,30 @@ def tune_knn(train_rows: list[dict], train_vectors: np.ndarray) -> tuple[int, fl
     return best
 
 
-def run_ai(rows: list[dict], model: str, mode: str, split: str, version: str, examples: list[list[dict]] | None) -> dict:
+def keyword_probabilities(keyword: dict, rows: list[dict]) -> np.ndarray:
+    """The saved keyword model's probability for every label, one row per complaint."""
+    return keyword["model"].predict_proba(keyword["vectorizer"].transform(r["text"] for r in rows))
+
+
+def tune_blend(train_rows: list[dict], train_vectors: np.ndarray, keyword: dict, k: int) -> tuple[float, float, float]:
+    """Choose the blend's weight and threshold on the 5,000 dev complaints."""
+    dev = load(INDEX / "dev_rows.jsonl")
+    positions, scores = top_k(np.load(INDEX / "dev_vectors.npy"), train_vectors, k=k)
+    classes = list(keyword["classes"])
+    shares = vote_shares([[train_rows[p]["labels"] for p in row] for row in positions], scores, classes)
+    probs = keyword_probabilities(keyword, dev)
+    truth = [r["labels"] for r in dev]
+    best = (0.5, 0.3, -1.0)
+    for weight in (0.25, 0.5, 0.75):
+        for threshold in np.arange(0.20, 0.61, 0.05):
+            f1 = score(truth, blend(probs, shares, classes, weight, float(threshold)))["micro_f1"]
+            if f1 > best[2]:
+                best = (weight, round(float(threshold), 2), f1)
+    return best
+
+
+def run_ai(rows: list[dict], model: str, mode: str, split: str, version: str, examples: list[list[dict]] | None,
+           suggestions: list[list[tuple[str, float]]] | None = None) -> dict:
     """Ask the model about every complaint (cached), then score the answers."""
     PREDICTIONS.mkdir(parents=True, exist_ok=True)
     cache = PREDICTIONS / f"{split}-{model.replace(':', '_')}-{mode}-{version}.jsonl"
@@ -72,7 +100,8 @@ def run_ai(rows: list[dict], model: str, mode: str, split: str, version: str, ex
             if row["id"] in done:
                 continue
             labels, info = classify(row["text"], model, examples=examples[i] if examples else None,
-                                    think=think, version=version)
+                                    think=think, version=version,
+                                    suggestions=suggestions[i] if suggestions else None)
             record = {"id": row["id"], "labels": sorted(labels), "seconds": info["seconds"],
                       "prompt_tokens": info["prompt_tokens"], "output_tokens": info["output_tokens"], "raw": info["raw"]}
             out.write(json.dumps(record) + "\n")
@@ -115,25 +144,42 @@ def main() -> None:
     else:
         rows, vectors_file = load(ROOT / "data" / "sample" / "test_sample.jsonl"), INDEX / "test_sample_vectors.npy"
 
-    needs_index = "knn" in args.modes or "rag" in args.modes
+    needs_index = bool({"knn", "rag", "blend", "hybrid"} & set(args.modes))
     if needs_index:
         train_rows = load(INDEX / "train_rows.jsonl")
         train_vectors = np.load(INDEX / "train_vectors.npy")
         query_vectors = np.load(vectors_file)[:len(rows)]
         positions, scores = top_k(query_vectors, train_vectors, k=40)
         examples = [[train_rows[p] for p in row[:EXAMPLES]] for row in positions]
+    if {"blend", "hybrid"} & set(args.modes):
+        keyword = joblib.load(PROCESSED / "keyword_model.joblib")  # saved by run_baselines.py
+        classes = list(keyword["classes"])
+        probs = keyword_probabilities(keyword, rows)
+        suggestions = top_suggestions(probs, classes)
     results, predicted = {}, {}
 
-    if "knn" in args.modes:
+    if "knn" in args.modes or "blend" in args.modes:
         k, threshold, dev_f1 = tune_knn(train_rows, train_vectors)
         neighbor_labels = [[train_rows[p]["labels"] for p in row[:k]] for row in positions]
+        print(f"  knn: k={k}, threshold={threshold} (dev micro F1 {dev_f1:.3f})", flush=True)
+    if "knn" in args.modes:
         name = f"Similar-complaint voting (k={k}, threshold {threshold})"
         predicted[name] = vote(neighbor_labels, scores[:, :k], threshold)
         results[name] = score([r["labels"] for r in rows], predicted[name])
-        print(f"  knn: k={k}, threshold={threshold} (dev micro F1 {dev_f1:.3f})", flush=True)
+    if "blend" in args.modes:
+        if args.split != "test":
+            raise SystemExit("the blend is tuned on the dev complaints, so it's only scored with --split test")
+        weight, blend_threshold, blend_dev_f1 = tune_blend(train_rows, train_vectors, keyword, k)
+        name = f"Blend of keyword model and voting, no AI (weight {weight}, threshold {blend_threshold})"
+        shares = vote_shares(neighbor_labels, scores[:, :k], classes)
+        predicted[name] = blend(probs, shares, classes, weight, blend_threshold)
+        results[name] = score([r["labels"] for r in rows], predicted[name])
+        print(f"  blend: weight {weight}, threshold {blend_threshold} (dev micro F1 {blend_dev_f1:.3f})", flush=True)
+    descriptions = {"alone": "on its own", "rag": "with similar examples (RAG)",
+                    "hybrid": "with similar examples and keyword suggestions (hybrid)"}
     for model in args.models:
-        for mode in [m for m in args.modes if m in ("alone", "rag")]:
-            description = f"{model}, {'with similar examples (RAG)' if mode == 'rag' else 'on its own'}"
+        for mode in [m for m in args.modes if m in descriptions]:
+            description = f"{model}, {descriptions[mode]}"
             if args.prompt == ["auto"]:
                 tried = {name.rsplit(" ", 1)[1]: s["micro_f1"] for name, s in dev.items() if name.startswith(description + ", prompt")}
                 if not tried:
@@ -145,7 +191,8 @@ def main() -> None:
             for version in versions:
                 label = f"{description}, prompt {version}"
                 results[label], predicted[label] = run_ai(rows, model, mode, args.split, version,
-                                                          examples if mode == "rag" else None)
+                                                          examples if mode in ("rag", "hybrid") else None,
+                                                          suggestions if mode == "hybrid" else None)
                 print(f"  {label}: micro F1 {results[label]['micro_f1']:.3f}", flush=True)
 
     header = ["| Approach | Micro precision | Micro recall | Micro F1 | Macro F1 | Exact match | Seconds per complaint (median) |",
@@ -161,7 +208,7 @@ def main() -> None:
         baselines = json.loads((PROCESSED / "baselines.json").read_text())
         rows_md = [summary(f"Baseline: {name[0].lower()}{name[1:]}", baselines[name]["sample"])
                    for name in ("Most common label", "Keyword model (TF-IDF + logistic regression)")]
-        ai_names = [n for n in results if not n.startswith("Similar-complaint")]
+        ai_names = [n for n in results if any(n.startswith(f"{m},") for m in args.models)]
         best_name = max(ai_names, key=lambda n: results[n]["micro_f1"])
         lines = ["# AI results", "", "Generated by `scripts/run_ai_eval.py --split test`. Don't edit by hand.", "",
                  f"Scored on the fixed test sample: {len(rows):,} complaints received from 2025 onward, never used for tuning. "

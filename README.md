@@ -2,7 +2,7 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 2 of 4. The AI is built and measured; the website comes next.
+> **Status:** week 2 of 4, plus a hybrid experiment. The AI is built and measured; the website comes next.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
@@ -11,7 +11,7 @@ When something goes wrong with a car, owners want to know two things: is this a 
 
 ## How it works
 1. **Find similar complaints.** Every past complaint is turned into an embedding (768 numbers that capture its meaning) with `nomic-embed-text`. A new description is matched against 200,000 past complaints, so a complaint about the same problem is found even when it uses different words.
-2. **Name the component.** A local AI model reads the description along with the 8 most similar past complaints and the components NHTSA recorded for them (retrieval-augmented generation, or RAG). A JSON schema limits its answer to NHTSA's 31 categories.
+2. **Name the component.** A local AI model reads the description along with the 8 most similar past complaints and the components NHTSA recorded for them (retrieval-augmented generation, or RAG). In the hybrid version, it also sees the keyword model's top 3 guesses with their confidence. A JSON schema limits its answer to NHTSA's 31 categories.
 3. **Find the recalls.** The vehicle's official recalls for those components are looked up in NHTSA's recall data. Recalls with a "Do Not Drive" or "Park Outside" advisory come first.
 
 Everything runs on your own computer through [Ollama](https://ollama.com), so complaint text never leaves the machine and there is no API cost.
@@ -28,27 +28,33 @@ Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full 
 
 | Approach | Micro F1 | Macro F1 | Exact match | Seconds per complaint |
 |---|---|---|---|---|
-| Keyword model (TF-IDF + logistic regression), the baseline | **0.718** | 0.533 | **55.1%** | under 0.01 |
+| Keyword model (TF-IDF + logistic regression), the baseline | 0.718 | 0.533 | 55.1% | under 0.01 |
 | Similar-complaint voting (20 nearest complaints) | 0.625 | 0.439 | 41.7% | under 0.01 |
+| **Blend** of the keyword model and the voting, no AI | **0.727** | 0.520 | 55.8% | under 0.01 |
 | `granite4:3b` on its own | 0.547 | 0.381 | 40.7% | 0.34 |
 | `granite4:3b` with similar examples (RAG) | 0.668 | 0.524 | 54.6% | 1.49 |
+| `granite4:3b` **hybrid** (RAG plus the keyword model's suggestions) | 0.701 | 0.556 | **57.5%** | 1.59 |
 | `qwen3:8b` on its own | 0.532 | 0.462 | 23.2% | 1.06 |
-| `qwen3:8b` with similar examples (RAG) | 0.669 | **0.570** | 34.8% | 3.84 |
+| `qwen3:8b` with similar examples (RAG) | 0.669 | 0.570 | 34.8% | 3.84 |
+| `qwen3:8b` **hybrid** | 0.694 | **0.607** | 40.7% | 4.16 |
 
 **Finding the right recalls.** For 484 of the 1,000 complaints, the vehicle has at least one NHTSA recall for the components NHTSA recorded:
 
 | Approach | Right recalls found | Recalls shown that are right |
 |---|---|---|
 | Keyword model, the baseline | 78.1% | 83.0% |
-| `granite4:3b` with RAG | 73.2% | **85.7%** |
-| `qwen3:8b` with RAG | **83.1%** | 75.1% |
+| Blend, no AI | 79.3% | 83.2% |
+| `granite4:3b` hybrid | 76.1% | **87.2%** |
+| `qwen3:8b` with RAG | 83.1% | 75.1% |
+| `qwen3:8b` hybrid | **84.6%** | 76.0% |
 
 ## What the results show
-- **RAG works.** Showing the model 8 similar past complaints with their NHTSA labels raised micro F1 by 12 to 14 points for both models.
-- **The classic keyword model is still the most accurate overall.** It learned NHTSA's labeling habits from 200,000 labeled examples, and it answers in under a hundredth of a second.
-- **For the goal that matters most to drivers, the AI does better on recall.** `qwen3:8b` with RAG found the most right recalls (83.1% against 78.1%), at the cost of showing more extra ones. It's also the best on rare components (macro F1 0.570 against 0.533).
-- **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` matched the 8.2-billion-parameter `qwen3:8b` on micro F1 (0.668 against 0.669) and was about 2.6 times faster with RAG.
-- **Next experiment:** a hybrid in which the AI reviews the keyword model's suggestions, tested the same way.
+- **No single approach wins everything**, so the right choice depends on the goal.
+- **Most accurate overall: the blend, with no AI.** Averaging the keyword model (75%) with similar-complaint voting (25%) reached 0.727 micro F1, against 0.718 for the keyword model alone, and it answers in under a hundredth of a second.
+- **Best for what drivers need most: the `qwen3:8b` hybrid.** It found 84.6% of the right recalls (against 78.1% for the keyword model), at the cost of showing more extra ones. It's also the best on rare components (macro F1 0.607 against 0.533).
+- **Most precise: the `granite4:3b` hybrid.** It has the highest share of fully correct answers (57.5%), and 87.2% of the recalls it shows are right.
+- **Each step helped the AI.** For `granite4:3b`, micro F1 went from 0.547 on its own to 0.668 with RAG and 0.701 as a hybrid. For `qwen3:8b`, it went from 0.532 to 0.669 to 0.694.
+- **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` kept pace with the 8.2-billion-parameter `qwen3:8b` and ran about 2.6 times faster.
 
 ## Reproduce
 Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
@@ -64,8 +70,8 @@ python -m pytest
 # Week 2: local AI models (about 7.6 GB in total)
 ollama pull nomic-embed-text && ollama pull granite4:3b && ollama pull qwen3:8b
 python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
-python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag --prompt v1 v2
-python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn alone rag --prompt auto   # about 2 hours
+python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag hybrid --prompt v1 v2
+python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn blend alone rag hybrid --prompt auto   # about 3.5 hours
 ```
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
@@ -86,7 +92,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 
 ## Roadmap
 1. **Week 1:** answer key and baselines (done)
-2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, recall lookup, and a fair comparison (done)
+2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
 3. **Week 3:** the website, an MCP server for AI assistants, and a free live demo
 4. **Week 4:** write-up, demo, and polish
 
