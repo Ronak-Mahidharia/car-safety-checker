@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { App } from "./App";
 import { Results } from "./components/Results";
+import { VehiclePicker } from "./components/VehiclePicker";
 import { orderRecalls } from "./lib/match";
 import type { Complaint, Recall } from "./lib/nhtsa";
 
@@ -70,8 +71,20 @@ describe("Results", () => {
     expect(html).toContain("Matches your description");
   });
 
-  it("shows counts, guesses, complaints, and links to NHTSA's records", () => {
-    expect(html).toContain("NHTSA has 3 recalls and 1,101 owner complaints on file for the 2019 HONDA CR-V.");
+  it("shows the vehicle, its counts, and a warning tile for the Do Not Drive recall", () => {
+    expect(html).toContain(">2019 HONDA CR-V</h2>");
+    expect(html).toMatch(/Recalls<\/dt><dd class="stat-value">3</);
+    expect(html).toMatch(/Owner complaints<\/dt><dd class="stat-value">1,101</);
+    expect(html).toContain("Safety warnings");
+    expect(html).toContain('<dd class="stat-detail">Do Not Drive</dd>');
+    expect(html.indexOf("Safety warnings")).toBeLessThan(html.indexOf("Recalls</dt>"));
+  });
+
+  it("opens NHTSA's records in a new tab without sharing the page", () => {
+    expect(html).toContain('target="_blank" rel="noopener noreferrer"');
+  });
+
+  it("shows guesses, complaints, and links to NHTSA's records", () => {
     expect(html).toContain("Engine");
     expect(html).toContain("0.81");
     expect(html).toContain("Crash");
@@ -97,5 +110,40 @@ describe("Results for a vehicle filed under more than one name", () => {
     expect(html).toContain("all of them were searched: AIR BEV, AIR.");
     expect(html).toContain("Filed under AIR");
     expect(html).toContain("Park Outside");
+  });
+});
+
+describe("Results without any safety warning", () => {
+  const html = renderToStaticMarkup(
+    <Results
+      vehicle={{ year: "2019", make: "HONDA", model: "CR-V" }}
+      names={["CR-V"]}
+      recalls={orderRecalls([recall("21V000001", "2021-03-25", "TIRES")], [])}
+      complaintCount={0}
+      analysis={null}
+      matches={null}
+    />,
+  );
+
+  it("has no warnings tile, because a zero there could be read as 'safe'", () => {
+    expect(html).not.toContain("Safety warnings");
+    expect(html).not.toContain('class="warning-banner"');
+  });
+});
+
+describe("The page before a vehicle is chosen", () => {
+  const html = renderToStaticMarkup(<App />);
+
+  it("explains what to do, and offers example descriptions that don't name a vehicle", () => {
+    expect(html).toContain("Choose a vehicle to begin");
+    expect(html).toContain("Engine hesitates");
+    expect(html).toContain("Skip to results");
+  });
+});
+
+describe("VehiclePicker", () => {
+  it("shows a vehicle from a link while NHTSA's lists are still loading", () => {
+    const html = renderToStaticMarkup(<VehiclePicker value={{ year: "2019", make: "HONDA", model: "CR-V" }} onChange={() => {}} />);
+    for (const value of ["2019", "HONDA", "CR-V"]) expect(html).toContain(`<option value="${value}" selected="">${value}</option>`);
   });
 });

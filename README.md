@@ -68,7 +68,8 @@ Pick a vehicle, describe the problem, and the page shows the vehicle's recalls a
 - **Every recall is shown,** with Do Not Drive and Park Outside advisories first, then those for the likely components. NHTSA's API names one component per recall even when a recall covers several, so matching only highlights recalls and never hides one.
 - **Vehicle names are handled carefully.** NHTSA's recall and complaint records often name the same vehicle differently: the 2026 Lucid Air's recalls are under "AIR" and its complaints under "AIR BEV". The picker also lists the 40,093 model names in NHTSA's recall file, and a search covers related names.
 - **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics, and a Content Security Policy limits connections to NHTSA's API.
-- **Checked:** 48 tests in CI (including Python and TypeScript giving the same answers), plus checks of the built site in headless Chrome: no errors, no sideways scrolling at phone width, and WCAG AA contrast in light and dark mode.
+- **Designed for any screen:** two columns on wide screens and one on phones, in light and dark mode. It has a skip link, labeled fields, and WCAG AA contrast, and red appears only for NHTSA's safety warnings.
+- **Checked:** 53 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
 
 ## Reproduce
 Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).

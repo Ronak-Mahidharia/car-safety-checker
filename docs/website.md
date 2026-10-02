@@ -58,8 +58,24 @@ The component guess comes from the browser model. On the fixed 1,000-complaint t
 
 The page shows these as guesses with a confidence, never as findings.
 
+## Design and accessibility
+- **Layout:** two columns on screens 1,024 px and wider, with the search form beside the results; it stays in view while you scroll when the screen is tall enough to show all of it. Tablets and phones get one column, and on phones a search scrolls down to the results.
+- **Accessible:**
+  - a "Skip to results" link
+  - labeled fields and visible focus
+  - a status line that screen readers announce when results change
+  - touch targets of 44 px or more
+  - 16 px text in fields, so phones don't zoom in
+  - no animation for people who turn motion off
+- **Contrast:** every text color pair meets WCAG AA in both themes (lowest 6.19:1 in light and 7.00:1 in dark, against the 4.5:1 minimum), and field borders reach at least 3:1.
+- **Responsible design:**
+  - red is used only for NHTSA's safety warnings and harm owners reported, and nothing is green, so no part of the page reads as "safe"
+  - the Safety warnings tile appears only when there's a warning, and first; a "0" there could be misread
+  - example descriptions fill in only the text box, never a vehicle, so they don't suggest that any car has those problems
+- **Light:** no outside fonts, icon libraries, or images. The icons are drawn for the site in SVG.
+
 ## How it's checked
-**48 tests (Vitest), run in CI:**
+**53 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -70,9 +86,16 @@ The page shows these as guesses with a confidence, never as findings.
   - advisories are read
   - the partial VIN is dropped
   - records found under several names are merged
-- Recall order, complaint matching, related names, the address rules, and the rendered page each have tests.
+- Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning.
 
 **On the built site in headless Chrome:**
+- Click-through checks on a 1,280 px screen and a 390 px phone all pass:
+  - the first Tab reaches "Skip to results"
+  - "Show full details" opens the whole card
+  - an example fills in only the description
+  - "Find matches" updates the guesses
+  - a phone scrolls to the results
+  - the address keeps only the vehicle
 - The 2019 Honda CR-V, the 2026 Lucid Air BEV, and the 2025 Isuzu NPR HD all load, with advisories first.
 - None of the 315 partial VINs in the CR-V's 1,101 complaint records appears on the page.
 - There are no JavaScript errors and no policy violations. The only console messages are the browser noting NHTSA's expected 400 replies for names with no records.

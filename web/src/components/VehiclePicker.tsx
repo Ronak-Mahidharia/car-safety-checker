@@ -80,17 +80,19 @@ interface SelectProps {
 
 function Select({ id, label, value, list, enabled, onPick }: SelectProps) {
   const loading = enabled && list.status === "loading";
+  // While a list loads, a value that's already chosen (from a link) stays visible instead of a blank.
+  const items = loading && value && !list.items.includes(value) ? [value] : list.items;
   return (
     <div className="field">
       <label htmlFor={id}>{label}</label>
       <select
         id={id}
-        value={list.items.includes(value ?? "") ? value : ""}
+        value={items.includes(value ?? "") ? value : ""}
         disabled={!enabled || list.status !== "ready" || !list.items.length}
         onChange={(event) => onPick(event.target.value || undefined)}
       >
         <option value="">{loading ? "Loading..." : `Choose a ${label.toLowerCase()}`}</option>
-        {list.items.map((item) => (
+        {items.map((item) => (
           <option key={item} value={item}>
             {item}
           </option>
