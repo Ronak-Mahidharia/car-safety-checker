@@ -5,6 +5,10 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 
+# Web packages and build output (reinstalled with npm ci, rebuilt with npm run build)
+web/node_modules/
+web/dist/
+
 # Data downloaded from NHTSA. Never committed; scripts/download_data.py fetches it.
 data/raw/
 data/processed/
