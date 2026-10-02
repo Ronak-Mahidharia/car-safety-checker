@@ -39,13 +39,17 @@ PROMPT_VERSION = "v1"
 
 
 def build_prompt(text: str, examples: list[dict] | None = None, example_chars: int = 600,
-                 version: str | None = None) -> str:
-    """The question for the model: categories first, then any examples, then the complaint."""
+                 version: str | None = None, suggestions: list[tuple[str, float]] | None = None) -> str:
+    """The question for the model: categories, then any examples and suggestions, then the complaint."""
     parts = ["Categories:\n" + "\n".join(f"- {label}" for label in LABELS)]
     if examples:
         shown = [f"Example {i} (categories: {', '.join(ex['labels'])}):\n{ex['text'][:example_chars]}"
                  for i, ex in enumerate(examples, 1)]
         parts.append("Similar past complaints, with the categories NHTSA recorded for them:\n\n" + "\n\n".join(shown))
+    if suggestions:
+        listed = ", ".join(f"{label} {probability:.2f}" for label, probability in suggestions)
+        parts.append("A keyword model trained on past complaints suggests these categories, with its confidence "
+                     f"from 0 to 1: {listed}. It is often right, but not always.")
     parts.append(f"Complaint:\n{text}")
     parts.append(QUESTIONS[version or PROMPT_VERSION])
     return "\n\n".join(parts)
@@ -64,14 +68,15 @@ def supports_thinking(model: str, url: str = OLLAMA_URL) -> bool:
 
 
 def classify(text: str, model: str, examples: list[dict] | None = None, url: str = OLLAMA_URL,
-             think: bool | None = None, version: str | None = None) -> tuple[set[str], dict]:
+             think: bool | None = None, version: str | None = None,
+             suggestions: list[tuple[str, float]] | None = None) -> tuple[set[str], dict]:
     """Return the predicted categories and details (time, tokens, raw answer)."""
     payload = {
         "model": model,
         "stream": False,
         "format": SCHEMA,
         "messages": [{"role": "system", "content": SYSTEM},
-                     {"role": "user", "content": build_prompt(text, examples, version=version)}],
+                     {"role": "user", "content": build_prompt(text, examples, version=version, suggestions=suggestions)}],
         "options": {"temperature": 0, "num_ctx": 8192},
     }
     if think is not None:

@@ -1,0 +1,1000 @@
+{"id": "11633556", "labels": ["POWER TRAIN"]}
+{"id": "11633564", "labels": ["ENGINE"]}
+{"id": "11633700", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11633774", "labels": ["POWER TRAIN"]}
+{"id": "11633832", "labels": ["STEERING"]}
+{"id": "11633856", "labels": ["AIR BAGS"]}
+{"id": "11633965", "labels": ["STRUCTURE"]}
+{"id": "11634619", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11634871", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11635043", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11635098", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11635361", "labels": ["ENGINE"]}
+{"id": "11635586", "labels": ["ENGINE"]}
+{"id": "11635773", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11635886", "labels": ["ENGINE"]}
+{"id": "11636141", "labels": ["ENGINE"]}
+{"id": "11636195", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM", "VEHICLE SPEED CONTROL"]}
+{"id": "11636224", "labels": ["STRUCTURE"]}
+{"id": "11636317", "labels": ["ENGINE"]}
+{"id": "11636888", "labels": ["ENGINE"]}
+{"id": "11637027", "labels": ["ENGINE"]}
+{"id": "11637090", "labels": ["ENGINE"]}
+{"id": "11637122", "labels": ["STRUCTURE"]}
+{"id": "11637281", "labels": ["SUSPENSION"]}
+{"id": "11637723", "labels": ["AIR BAGS"]}
+{"id": "11637730", "labels": ["ENGINE"]}
+{"id": "11637835", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11637902", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11638049", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11638166", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11638172", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE", "LANE DEPARTURE"]}
+{"id": "11638194", "labels": ["AIR BAGS", "SEATS"]}
+{"id": "11638258", "labels": ["STEERING", "SUSPENSION"]}
+{"id": "11638386", "labels": ["ENGINE"]}
+{"id": "11638586", "labels": ["FORWARD COLLISION AVOIDANCE", "VEHICLE SPEED CONTROL"]}
+{"id": "11638707", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11638711", "labels": ["SERVICE BRAKES"]}
+{"id": "11639076", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11639250", "labels": ["ENGINE"]}
+{"id": "11639425", "labels": ["ENGINE"]}
+{"id": "11639441", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11639780", "labels": ["STEERING", "STRUCTURE"]}
+{"id": "11639949", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11640349", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11640656", "labels": ["SERVICE BRAKES"]}
+{"id": "11640737", "labels": ["POWER TRAIN"]}
+{"id": "11640744", "labels": ["POWER TRAIN"]}
+{"id": "11640839", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11641123", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11641376", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11641695", "labels": ["POWER TRAIN", "SERVICE BRAKES"]}
+{"id": "11641891", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11641951", "labels": ["ENGINE"]}
+{"id": "11642145", "labels": ["ENGINE"]}
+{"id": "11642299", "labels": ["POWER TRAIN"]}
+{"id": "11643149", "labels": ["SERVICE BRAKES"]}
+{"id": "11643202", "labels": ["ELECTRONIC STABILITY CONTROL (ESC)", "SERVICE BRAKES"]}
+{"id": "11643337", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11643584", "labels": ["ENGINE"]}
+{"id": "11643610", "labels": ["SERVICE BRAKES"]}
+{"id": "11643658", "labels": ["POWER TRAIN"]}
+{"id": "11643704", "labels": ["TIRES"]}
+{"id": "11643774", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11643964", "labels": ["ENGINE"]}
+{"id": "11644194", "labels": ["STEERING"]}
+{"id": "11644539", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11644743", "labels": ["ENGINE"]}
+{"id": "11644887", "labels": ["ENGINE"]}
+{"id": "11644898", "labels": ["ENGINE"]}
+{"id": "11645053", "labels": ["POWER TRAIN"]}
+{"id": "11645114", "labels": ["AIR BAGS"]}
+{"id": "11645202", "labels": ["STEERING"]}
+{"id": "11645872", "labels": ["POWER TRAIN"]}
+{"id": "11645914", "labels": ["STEERING"]}
+{"id": "11646230", "labels": ["STRUCTURE"]}
+{"id": "11646236", "labels": ["SUSPENSION"]}
+{"id": "11646474", "labels": ["SUSPENSION"]}
+{"id": "11646530", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11646648", "labels": ["ENGINE"]}
+{"id": "11646882", "labels": ["SERVICE BRAKES"]}
+{"id": "11647011", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE"]}
+{"id": "11647031", "labels": ["ENGINE"]}
+{"id": "11647489", "labels": ["SERVICE BRAKES"]}
+{"id": "11647593", "labels": ["SUSPENSION"]}
+{"id": "11647598", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11648036", "labels": ["ENGINE"]}
+{"id": "11648059", "labels": ["STRUCTURE"]}
+{"id": "11648106", "labels": ["POWER TRAIN"]}
+{"id": "11648158", "labels": ["ENGINE"]}
+{"id": "11648375", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11648390", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11648403", "labels": ["POWER TRAIN"]}
+{"id": "11648539", "labels": ["STEERING", "SUSPENSION"]}
+{"id": "11648839", "labels": ["POWER TRAIN"]}
+{"id": "11648860", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11648985", "labels": ["POWER TRAIN"]}
+{"id": "11649035", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11649095", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11649131", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11649217", "labels": ["ENGINE"]}
+{"id": "11649592", "labels": ["ENGINE"]}
+{"id": "11649882", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11649966", "labels": ["ENGINE"]}
+{"id": "11650613", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11650641", "labels": ["FORWARD COLLISION AVOIDANCE", "POWER TRAIN"]}
+{"id": "11650710", "labels": ["POWER TRAIN"]}
+{"id": "11650740", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11651272", "labels": ["ENGINE"]}
+{"id": "11651331", "labels": ["POWER TRAIN"]}
+{"id": "11651346", "labels": ["ENGINE"]}
+{"id": "11651675", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11651718", "labels": ["SERVICE BRAKES"]}
+{"id": "11651886", "labels": ["AIR BAGS"]}
+{"id": "11651927", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11652082", "labels": ["STEERING"]}
+{"id": "11652269", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11652559", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11652660", "labels": ["SUSPENSION"]}
+{"id": "11652690", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11652830", "labels": ["SUSPENSION"]}
+{"id": "11652872", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11653018", "labels": ["STRUCTURE"]}
+{"id": "11653077", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11653305", "labels": ["POWER TRAIN"]}
+{"id": "11653342", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11653419", "labels": ["ENGINE"]}
+{"id": "11653429", "labels": ["POWER TRAIN"]}
+{"id": "11653572", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11653679", "labels": ["STRUCTURE"]}
+{"id": "11653897", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11654203", "labels": ["AIR BAGS", "ELECTRICAL SYSTEM"]}
+{"id": "11654268", "labels": ["POWER TRAIN"]}
+{"id": "11654382", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11654499", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11654506", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11655045", "labels": ["STEERING"]}
+{"id": "11655170", "labels": ["AIR BAGS"]}
+{"id": "11655268", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11655376", "labels": ["POWER TRAIN"]}
+{"id": "11655420", "labels": ["POWER TRAIN"]}
+{"id": "11655533", "labels": ["SERVICE BRAKES"]}
+{"id": "11655547", "labels": ["POWER TRAIN"]}
+{"id": "11655618", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11655625", "labels": ["STEERING"]}
+{"id": "11655693", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11655714", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11656071", "labels": ["SEAT BELTS"]}
+{"id": "11656086", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11656157", "labels": ["STRUCTURE"]}
+{"id": "11656405", "labels": ["ENGINE"]}
+{"id": "11656648", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11656967", "labels": ["POWER TRAIN"]}
+{"id": "11657027", "labels": ["WHEELS"]}
+{"id": "11657107", "labels": ["STEERING"]}
+{"id": "11657331", "labels": ["ENGINE"]}
+{"id": "11657452", "labels": ["ENGINE"]}
+{"id": "11657579", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11657603", "labels": ["ENGINE"]}
+{"id": "11657709", "labels": ["POWER TRAIN", "SERVICE BRAKES"]}
+{"id": "11657943", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11658078", "labels": ["SERVICE BRAKES"]}
+{"id": "11658133", "labels": ["POWER TRAIN"]}
+{"id": "11658373", "labels": ["STRUCTURE"]}
+{"id": "11658406", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11658575", "labels": ["STRUCTURE"]}
+{"id": "11658920", "labels": ["ENGINE"]}
+{"id": "11659007", "labels": ["ENGINE"]}
+{"id": "11659012", "labels": ["SERVICE BRAKES"]}
+{"id": "11659334", "labels": ["AIR BAGS", "SERVICE BRAKES"]}
+{"id": "11659537", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11659822", "labels": ["STEERING"]}
+{"id": "11659851", "labels": ["ENGINE"]}
+{"id": "11659956", "labels": ["STEERING"]}
+{"id": "11659998", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11660118", "labels": ["POWER TRAIN"]}
+{"id": "11660217", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11660225", "labels": ["POWER TRAIN"]}
+{"id": "11660276", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11660558", "labels": ["ENGINE"]}
+{"id": "11660615", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11660934", "labels": ["POWER TRAIN"]}
+{"id": "11661069", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11661135", "labels": ["AIR BAGS"]}
+{"id": "11661416", "labels": ["POWER TRAIN"]}
+{"id": "11661527", "labels": ["POWER TRAIN"]}
+{"id": "11661729", "labels": ["SERVICE BRAKES"]}
+{"id": "11661844", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11661974", "labels": ["ENGINE"]}
+{"id": "11662082", "labels": ["AIR BAGS", "SEATS"]}
+{"id": "11662149", "labels": ["SERVICE BRAKES"]}
+{"id": "11662568", "labels": ["STRUCTURE"]}
+{"id": "11662604", "labels": ["SERVICE BRAKES"]}
+{"id": "11662760", "labels": ["SERVICE BRAKES"]}
+{"id": "11662772", "labels": ["ELECTRICAL SYSTEM", "EXTERIOR LIGHTING"]}
+{"id": "11663289", "labels": ["AIR BAGS"]}
+{"id": "11663320", "labels": ["POWER TRAIN"]}
+{"id": "11663499", "labels": ["POWER TRAIN"]}
+{"id": "11663550", "labels": ["POWER TRAIN"]}
+{"id": "11663581", "labels": ["STEERING"]}
+{"id": "11663773", "labels": ["ENGINE"]}
+{"id": "11663832", "labels": ["STRUCTURE"]}
+{"id": "11663899", "labels": ["SERVICE BRAKES"]}
+{"id": "11663911", "labels": ["POWER TRAIN"]}
+{"id": "11664006", "labels": ["SERVICE BRAKES"]}
+{"id": "11664015", "labels": ["POWER TRAIN"]}
+{"id": "11664052", "labels": ["ENGINE"]}
+{"id": "11664369", "labels": ["ENGINE"]}
+{"id": "11664513", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11664832", "labels": ["ENGINE"]}
+{"id": "11664840", "labels": ["SERVICE BRAKES"]}
+{"id": "11664915", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "SERVICE BRAKES"]}
+{"id": "11665050", "labels": ["AIR BAGS"]}
+{"id": "11665152", "labels": ["SERVICE BRAKES"]}
+{"id": "11665176", "labels": ["STRUCTURE", "SUSPENSION"]}
+{"id": "11665270", "labels": ["ENGINE"]}
+{"id": "11665274", "labels": ["SEAT BELTS"]}
+{"id": "11665390", "labels": ["ENGINE"]}
+{"id": "11665453", "labels": ["FUEL/PROPULSION SYSTEM", "POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11665626", "labels": ["POWER TRAIN"]}
+{"id": "11665725", "labels": ["POWER TRAIN"]}
+{"id": "11665760", "labels": ["SERVICE BRAKES"]}
+{"id": "11665865", "labels": ["STRUCTURE", "VISIBILITY/WIPER"]}
+{"id": "11665901", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11665940", "labels": ["FORWARD COLLISION AVOIDANCE", "STEERING"]}
+{"id": "11666018", "labels": ["ENGINE"]}
+{"id": "11666152", "labels": ["WHEELS"]}
+{"id": "11666226", "labels": ["POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11666276", "labels": ["POWER TRAIN"]}
+{"id": "11666315", "labels": ["ENGINE"]}
+{"id": "11666357", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11666560", "labels": ["SERVICE BRAKES"]}
+{"id": "11666887", "labels": ["POWER TRAIN"]}
+{"id": "11666961", "labels": ["POWER TRAIN"]}
+{"id": "11667420", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11667611", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11667640", "labels": ["ENGINE"]}
+{"id": "11667981", "labels": ["POWER TRAIN"]}
+{"id": "11668008", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11668129", "labels": ["STEERING"]}
+{"id": "11668229", "labels": ["SERVICE BRAKES", "VEHICLE SPEED CONTROL"]}
+{"id": "11668359", "labels": ["POWER TRAIN"]}
+{"id": "11668608", "labels": ["SERVICE BRAKES"]}
+{"id": "11668673", "labels": ["ENGINE"]}
+{"id": "11668775", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11669065", "labels": ["ENGINE"]}
+{"id": "11669214", "labels": ["ENGINE"]}
+{"id": "11669596", "labels": ["ELECTRICAL SYSTEM", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11669823", "labels": ["AIR BAGS"]}
+{"id": "11669826", "labels": ["POWER TRAIN"]}
+{"id": "11669965", "labels": ["BACK OVER PREVENTION", "ELECTRICAL SYSTEM"]}
+{"id": "11670109", "labels": ["ENGINE"]}
+{"id": "11670150", "labels": ["FORWARD COLLISION AVOIDANCE", "LANE DEPARTURE"]}
+{"id": "11670344", "labels": ["POWER TRAIN"]}
+{"id": "11670363", "labels": ["SEAT BELTS"]}
+{"id": "11670480", "labels": ["ELECTRONIC STABILITY CONTROL (ESC)", "SERVICE BRAKES"]}
+{"id": "11670516", "labels": ["ENGINE"]}
+{"id": "11670542", "labels": ["ENGINE"]}
+{"id": "11670577", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11670907", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11671134", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11671291", "labels": ["POWER TRAIN"]}
+{"id": "11671712", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11671845", "labels": ["ENGINE"]}
+{"id": "11672360", "labels": ["POWER TRAIN"]}
+{"id": "11672519", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11672727", "labels": ["ENGINE"]}
+{"id": "11672890", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11673054", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11673508", "labels": ["ENGINE"]}
+{"id": "11673774", "labels": ["SERVICE BRAKES"]}
+{"id": "11673885", "labels": ["ENGINE"]}
+{"id": "11673907", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11673927", "labels": ["STEERING"]}
+{"id": "11674086", "labels": ["SERVICE BRAKES"]}
+{"id": "11674115", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11674167", "labels": ["SERVICE BRAKES"]}
+{"id": "11674242", "labels": ["ENGINE"]}
+{"id": "11674273", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11674288", "labels": ["TIRES", "WHEELS"]}
+{"id": "11674637", "labels": ["STRUCTURE"]}
+{"id": "11674656", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11674825", "labels": ["ENGINE"]}
+{"id": "11675112", "labels": ["STRUCTURE"]}
+{"id": "11675579", "labels": ["TIRES"]}
+{"id": "11675598", "labels": ["ENGINE"]}
+{"id": "11675615", "labels": ["STRUCTURE"]}
+{"id": "11675962", "labels": ["ENGINE"]}
+{"id": "11676183", "labels": ["STRUCTURE"]}
+{"id": "11676714", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11676981", "labels": ["FUEL/PROPULSION SYSTEM", "POWER TRAIN"]}
+{"id": "11677268", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11677331", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11677518", "labels": ["ENGINE"]}
+{"id": "11677726", "labels": ["POWER TRAIN"]}
+{"id": "11677770", "labels": ["ENGINE"]}
+{"id": "11677847", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11677886", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11677934", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11677968", "labels": ["AIR BAGS"]}
+{"id": "11678038", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11678199", "labels": ["ENGINE"]}
+{"id": "11678403", "labels": ["ENGINE"]}
+{"id": "11678413", "labels": ["SERVICE BRAKES"]}
+{"id": "11678538", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11678616", "labels": ["ENGINE"]}
+{"id": "11678711", "labels": ["SERVICE BRAKES", "VEHICLE SPEED CONTROL"]}
+{"id": "11678741", "labels": ["POWER TRAIN"]}
+{"id": "11678755", "labels": ["POWER TRAIN"]}
+{"id": "11678810", "labels": ["SERVICE BRAKES"]}
+{"id": "11679198", "labels": ["ENGINE"]}
+{"id": "11679324", "labels": ["ENGINE"]}
+{"id": "11679364", "labels": ["ENGINE"]}
+{"id": "11679379", "labels": ["SERVICE BRAKES", "VEHICLE SPEED CONTROL"]}
+{"id": "11679404", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11679619", "labels": ["ENGINE"]}
+{"id": "11679828", "labels": ["SERVICE BRAKES"]}
+{"id": "11679929", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11679948", "labels": ["ELECTRICAL SYSTEM", "EXTERIOR LIGHTING", "SERVICE BRAKES"]}
+{"id": "11680039", "labels": ["ENGINE"]}
+{"id": "11680158", "labels": ["SERVICE BRAKES"]}
+{"id": "11680163", "labels": ["ENGINE"]}
+{"id": "11680215", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11680416", "labels": ["POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11680489", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11680555", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11680928", "labels": ["ENGINE"]}
+{"id": "11681092", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11681108", "labels": ["POWER TRAIN"]}
+{"id": "11681187", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11681190", "labels": ["ENGINE"]}
+{"id": "11681269", "labels": ["SERVICE BRAKES"]}
+{"id": "11681297", "labels": ["STRUCTURE", "SUSPENSION"]}
+{"id": "11681491", "labels": ["ENGINE"]}
+{"id": "11681609", "labels": ["ENGINE"]}
+{"id": "11681660", "labels": ["ENGINE"]}
+{"id": "11681698", "labels": ["SERVICE BRAKES"]}
+{"id": "11681707", "labels": ["STRUCTURE", "SUSPENSION"]}
+{"id": "11681768", "labels": ["ENGINE"]}
+{"id": "11681801", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11681932", "labels": ["SERVICE BRAKES"]}
+{"id": "11682222", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11682260", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11682304", "labels": ["POWER TRAIN"]}
+{"id": "11682312", "labels": ["STRUCTURE"]}
+{"id": "11682326", "labels": ["ENGINE"]}
+{"id": "11682344", "labels": ["POWER TRAIN"]}
+{"id": "11682472", "labels": ["STRUCTURE"]}
+{"id": "11682490", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11682603", "labels": ["ENGINE"]}
+{"id": "11682756", "labels": ["ENGINE"]}
+{"id": "11682793", "labels": ["STRUCTURE"]}
+{"id": "11682796", "labels": ["AIR BAGS"]}
+{"id": "11683112", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11683282", "labels": ["ENGINE"]}
+{"id": "11683349", "labels": ["POWER TRAIN"]}
+{"id": "11683917", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11683961", "labels": ["POWER TRAIN"]}
+{"id": "11683999", "labels": ["ENGINE"]}
+{"id": "11684028", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11684047", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11684169", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11684426", "labels": ["AIR BAGS", "ELECTRICAL SYSTEM"]}
+{"id": "11684504", "labels": ["SERVICE BRAKES"]}
+{"id": "11685061", "labels": ["ENGINE"]}
+{"id": "11685265", "labels": ["ENGINE"]}
+{"id": "11685269", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11685271", "labels": ["POWER TRAIN"]}
+{"id": "11685278", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11685311", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11685365", "labels": ["STRUCTURE"]}
+{"id": "11685431", "labels": ["ENGINE"]}
+{"id": "11685681", "labels": ["ENGINE"]}
+{"id": "11685761", "labels": ["STEERING"]}
+{"id": "11686008", "labels": ["POWER TRAIN"]}
+{"id": "11686052", "labels": ["STEERING"]}
+{"id": "11686580", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11686596", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11686644", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11686658", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11686897", "labels": ["POWER TRAIN"]}
+{"id": "11686996", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11687274", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE", "LANE DEPARTURE"]}
+{"id": "11687307", "labels": ["AIR BAGS"]}
+{"id": "11687322", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11687494", "labels": ["ENGINE"]}
+{"id": "11687579", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11687718", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11687844", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11688024", "labels": ["STRUCTURE"]}
+{"id": "11688091", "labels": ["STEERING"]}
+{"id": "11688133", "labels": ["ELECTRICAL SYSTEM", "STRUCTURE"]}
+{"id": "11688150", "labels": ["BACK OVER PREVENTION", "ELECTRICAL SYSTEM"]}
+{"id": "11688264", "labels": ["AIR BAGS"]}
+{"id": "11688543", "labels": ["ENGINE", "STEERING"]}
+{"id": "11688706", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11688790", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11689063", "labels": ["ENGINE"]}
+{"id": "11689120", "labels": ["POWER TRAIN"]}
+{"id": "11689312", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11689386", "labels": ["POWER TRAIN"]}
+{"id": "11689408", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11689476", "labels": ["ENGINE"]}
+{"id": "11689526", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11689528", "labels": ["ENGINE"]}
+{"id": "11689772", "labels": ["WHEELS"]}
+{"id": "11689935", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11690168", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11690217", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11690892", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11691264", "labels": ["ENGINE"]}
+{"id": "11691323", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11691497", "labels": ["SERVICE BRAKES"]}
+{"id": "11691586", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11691608", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE", "VEHICLE SPEED CONTROL"]}
+{"id": "11691710", "labels": ["ENGINE"]}
+{"id": "11691862", "labels": ["STRUCTURE"]}
+{"id": "11691887", "labels": ["ENGINE"]}
+{"id": "11691894", "labels": ["SEATS"]}
+{"id": "11691973", "labels": ["ENGINE"]}
+{"id": "11692049", "labels": ["ENGINE"]}
+{"id": "11692215", "labels": ["POWER TRAIN"]}
+{"id": "11692308", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11692572", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11693151", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11693373", "labels": ["POWER TRAIN"]}
+{"id": "11693401", "labels": ["ELECTRICAL SYSTEM", "STRUCTURE"]}
+{"id": "11693706", "labels": ["POWER TRAIN"]}
+{"id": "11693746", "labels": ["AIR BAGS", "SEAT BELTS"]}
+{"id": "11694078", "labels": ["AIR BAGS"]}
+{"id": "11694138", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11694236", "labels": ["AIR BAGS"]}
+{"id": "11694248", "labels": ["SEAT BELTS"]}
+{"id": "11694269", "labels": ["ENGINE"]}
+{"id": "11694365", "labels": ["AIR BAGS"]}
+{"id": "11694604", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11694932", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11695148", "labels": ["ENGINE"]}
+{"id": "11695392", "labels": ["ENGINE"]}
+{"id": "11695535", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11695560", "labels": ["STEERING"]}
+{"id": "11695585", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11695958", "labels": ["AIR BAGS", "SERVICE BRAKES"]}
+{"id": "11696067", "labels": ["ENGINE"]}
+{"id": "11696103", "labels": ["BACK OVER PREVENTION", "SERVICE BRAKES"]}
+{"id": "11696479", "labels": ["POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11696514", "labels": ["ENGINE"]}
+{"id": "11696532", "labels": ["ENGINE"]}
+{"id": "11696755", "labels": ["SERVICE BRAKES"]}
+{"id": "11696861", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11696897", "labels": ["POWER TRAIN"]}
+{"id": "11697083", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11697101", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11697176", "labels": ["POWER TRAIN"]}
+{"id": "11697349", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11697486", "labels": ["AIR BAGS"]}
+{"id": "11697492", "labels": ["ENGINE"]}
+{"id": "11697513", "labels": ["POWER TRAIN"]}
+{"id": "11697614", "labels": ["SERVICE BRAKES"]}
+{"id": "11697685", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11697735", "labels": ["SERVICE BRAKES"]}
+{"id": "11697803", "labels": ["ENGINE"]}
+{"id": "11697887", "labels": ["ENGINE"]}
+{"id": "11697975", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11698167", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11698237", "labels": ["SERVICE BRAKES"]}
+{"id": "11698377", "labels": ["ENGINE"]}
+{"id": "11698412", "labels": ["ENGINE"]}
+{"id": "11698745", "labels": ["ENGINE"]}
+{"id": "11698777", "labels": ["POWER TRAIN"]}
+{"id": "11698792", "labels": ["STRUCTURE", "VISIBILITY/WIPER"]}
+{"id": "11698799", "labels": ["ELECTRICAL SYSTEM", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11698803", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11698839", "labels": ["ELECTRICAL SYSTEM", "VISIBILITY/WIPER"]}
+{"id": "11698981", "labels": ["BACK OVER PREVENTION", "ELECTRICAL SYSTEM"]}
+{"id": "11699114", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11699279", "labels": ["STEERING", "SUSPENSION"]}
+{"id": "11699466", "labels": ["BACK OVER PREVENTION", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11699942", "labels": ["AIR BAGS"]}
+{"id": "11700009", "labels": ["ENGINE"]}
+{"id": "11700030", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11700107", "labels": ["PARKING BRAKE", "SERVICE BRAKES"]}
+{"id": "11700190", "labels": ["SUSPENSION"]}
+{"id": "11700309", "labels": ["ENGINE"]}
+{"id": "11700333", "labels": ["ENGINE"]}
+{"id": "11700389", "labels": ["SUSPENSION"]}
+{"id": "11700398", "labels": ["ENGINE"]}
+{"id": "11700421", "labels": ["POWER TRAIN"]}
+{"id": "11700723", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "FUEL/PROPULSION SYSTEM", "POWER TRAIN"]}
+{"id": "11700830", "labels": ["AIR BAGS"]}
+{"id": "11701113", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11701131", "labels": ["STEERING"]}
+{"id": "11701197", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11701328", "labels": ["ENGINE"]}
+{"id": "11701464", "labels": ["FUEL/PROPULSION SYSTEM", "POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11701487", "labels": ["ENGINE"]}
+{"id": "11701515", "labels": ["POWER TRAIN"]}
+{"id": "11701778", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11701804", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11701868", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11701950", "labels": ["ENGINE"]}
+{"id": "11701974", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11702005", "labels": ["ENGINE"]}
+{"id": "11702020", "labels": ["SERVICE BRAKES"]}
+{"id": "11702338", "labels": ["POWER TRAIN"]}
+{"id": "11702466", "labels": ["ENGINE"]}
+{"id": "11702491", "labels": ["POWER TRAIN", "SUSPENSION"]}
+{"id": "11702500", "labels": ["SERVICE BRAKES"]}
+{"id": "11702625", "labels": ["POWER TRAIN"]}
+{"id": "11702843", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11702903", "labels": ["ENGINE"]}
+{"id": "11702985", "labels": ["STRUCTURE", "VISIBILITY/WIPER"]}
+{"id": "11703609", "labels": ["POWER TRAIN"]}
+{"id": "11703721", "labels": ["ENGINE"]}
+{"id": "11703754", "labels": ["POWER TRAIN"]}
+{"id": "11703838", "labels": ["STEERING"]}
+{"id": "11704095", "labels": ["POWER TRAIN"]}
+{"id": "11704107", "labels": ["STRUCTURE"]}
+{"id": "11704282", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11704437", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES", "STEERING"]}
+{"id": "11704706", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11704969", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11704974", "labels": ["SEAT BELTS", "STRUCTURE"]}
+{"id": "11704984", "labels": ["ENGINE"]}
+{"id": "11705035", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11705351", "labels": ["ENGINE"]}
+{"id": "11705382", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11705461", "labels": ["ENGINE"]}
+{"id": "11705519", "labels": ["ENGINE"]}
+{"id": "11705535", "labels": ["ELECTRONIC STABILITY CONTROL (ESC)", "SERVICE BRAKES", "STEERING"]}
+{"id": "11705568", "labels": ["ENGINE"]}
+{"id": "11705741", "labels": ["ENGINE"]}
+{"id": "11705769", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11705929", "labels": ["ENGINE"]}
+{"id": "11705982", "labels": ["LANE DEPARTURE", "SERVICE BRAKES"]}
+{"id": "11706447", "labels": ["POWER TRAIN"]}
+{"id": "11706557", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11706621", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11706783", "labels": ["SERVICE BRAKES", "STEERING"]}
+{"id": "11707284", "labels": ["ENGINE"]}
+{"id": "11707389", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11707682", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11707819", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11707836", "labels": ["ENGINE"]}
+{"id": "11708221", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11708813", "labels": ["POWER TRAIN"]}
+{"id": "11709183", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11709241", "labels": ["POWER TRAIN"]}
+{"id": "11709587", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11709594", "labels": ["ENGINE"]}
+{"id": "11710503", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11710598", "labels": ["SUSPENSION"]}
+{"id": "11710602", "labels": ["ENGINE"]}
+{"id": "11710742", "labels": ["AIR BAGS"]}
+{"id": "11710778", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11710833", "labels": ["ELECTRICAL SYSTEM", "SEATS"]}
+{"id": "11710863", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11710870", "labels": ["ENGINE"]}
+{"id": "11711045", "labels": ["ELECTRONIC STABILITY CONTROL (ESC)", "STEERING"]}
+{"id": "11711153", "labels": ["STRUCTURE"]}
+{"id": "11711200", "labels": ["SEAT BELTS"]}
+{"id": "11711277", "labels": ["ENGINE"]}
+{"id": "11711452", "labels": ["SERVICE BRAKES"]}
+{"id": "11711453", "labels": ["STRUCTURE"]}
+{"id": "11711468", "labels": ["SERVICE BRAKES"]}
+{"id": "11711587", "labels": ["STEERING"]}
+{"id": "11711647", "labels": ["STEERING"]}
+{"id": "11711777", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11712072", "labels": ["ENGINE"]}
+{"id": "11712254", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11712319", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11712418", "labels": ["SERVICE BRAKES"]}
+{"id": "11712529", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11712533", "labels": ["ENGINE"]}
+{"id": "11713161", "labels": ["STEERING"]}
+{"id": "11713268", "labels": ["AIR BAGS"]}
+{"id": "11713287", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11713391", "labels": ["ENGINE"]}
+{"id": "11713410", "labels": ["ENGINE"]}
+{"id": "11713512", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11713642", "labels": ["SERVICE BRAKES"]}
+{"id": "11713757", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11713837", "labels": ["ENGINE", "POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11714162", "labels": ["ENGINE"]}
+{"id": "11714176", "labels": ["ENGINE"]}
+{"id": "11714224", "labels": ["ENGINE"]}
+{"id": "11714460", "labels": ["ENGINE", "STEERING"]}
+{"id": "11714477", "labels": ["POWER TRAIN"]}
+{"id": "11714754", "labels": ["STEERING"]}
+{"id": "11715026", "labels": ["POWER TRAIN"]}
+{"id": "11715116", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11715124", "labels": ["WHEELS"]}
+{"id": "11715241", "labels": ["POWER TRAIN"]}
+{"id": "11715334", "labels": ["POWER TRAIN"]}
+{"id": "11715398", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11715418", "labels": ["SERVICE BRAKES"]}
+{"id": "11715456", "labels": ["AIR BAGS"]}
+{"id": "11715507", "labels": ["ENGINE"]}
+{"id": "11715631", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11715984", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11716005", "labels": ["POWER TRAIN"]}
+{"id": "11716241", "labels": ["STRUCTURE"]}
+{"id": "11716343", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11716378", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11716446", "labels": ["ENGINE"]}
+{"id": "11716517", "labels": ["POWER TRAIN"]}
+{"id": "11716708", "labels": ["AIR BAGS"]}
+{"id": "11716740", "labels": ["POWER TRAIN"]}
+{"id": "11716774", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11716780", "labels": ["STEERING"]}
+{"id": "11716871", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11717080", "labels": ["POWER TRAIN"]}
+{"id": "11717314", "labels": ["SERVICE BRAKES"]}
+{"id": "11717433", "labels": ["POWER TRAIN"]}
+{"id": "11717435", "labels": ["ELECTRICAL SYSTEM", "STRUCTURE"]}
+{"id": "11717461", "labels": ["SERVICE BRAKES"]}
+{"id": "11717486", "labels": ["ENGINE"]}
+{"id": "11717815", "labels": ["POWER TRAIN"]}
+{"id": "11717843", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11717969", "labels": ["POWER TRAIN"]}
+{"id": "11718074", "labels": ["AIR BAGS"]}
+{"id": "11718209", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11718286", "labels": ["ENGINE"]}
+{"id": "11718447", "labels": ["ENGINE"]}
+{"id": "11718896", "labels": ["POWER TRAIN"]}
+{"id": "11718910", "labels": ["ENGINE"]}
+{"id": "11718924", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11719198", "labels": ["ENGINE"]}
+{"id": "11719238", "labels": ["STEERING"]}
+{"id": "11719345", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11720005", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11720162", "labels": ["SERVICE BRAKES"]}
+{"id": "11720235", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11720370", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11720592", "labels": ["ENGINE"]}
+{"id": "11720924", "labels": ["POWER TRAIN"]}
+{"id": "11721049", "labels": ["ENGINE"]}
+{"id": "11721340", "labels": ["POWER TRAIN"]}
+{"id": "11721521", "labels": ["SERVICE BRAKES"]}
+{"id": "11721532", "labels": ["STRUCTURE", "VISIBILITY/WIPER"]}
+{"id": "11721670", "labels": ["ELECTRONIC STABILITY CONTROL (ESC)", "SERVICE BRAKES"]}
+{"id": "11722004", "labels": ["STEERING"]}
+{"id": "11722149", "labels": ["POWER TRAIN"]}
+{"id": "11722160", "labels": ["ENGINE"]}
+{"id": "11722164", "labels": ["SERVICE BRAKES"]}
+{"id": "11722181", "labels": ["ENGINE"]}
+{"id": "11722219", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11722278", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11722472", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11722501", "labels": ["STEERING"]}
+{"id": "11722502", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11722504", "labels": ["SERVICE BRAKES"]}
+{"id": "11722511", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11722673", "labels": ["ENGINE"]}
+{"id": "11722779", "labels": ["ENGINE"]}
+{"id": "11723054", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11723298", "labels": ["SERVICE BRAKES"]}
+{"id": "11723577", "labels": ["ENGINE"]}
+{"id": "11723605", "labels": ["ENGINE"]}
+{"id": "11723665", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11723716", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11723775", "labels": ["POWER TRAIN"]}
+{"id": "11723836", "labels": ["STRUCTURE"]}
+{"id": "11724142", "labels": ["WHEELS"]}
+{"id": "11724154", "labels": ["SERVICE BRAKES"]}
+{"id": "11724306", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11724333", "labels": ["ENGINE"]}
+{"id": "11724387", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11724489", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11724662", "labels": ["STRUCTURE"]}
+{"id": "11724823", "labels": ["STRUCTURE"]}
+{"id": "11724892", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11725096", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11725225", "labels": ["SERVICE BRAKES"]}
+{"id": "11725229", "labels": ["AIR BAGS"]}
+{"id": "11725264", "labels": ["AIR BAGS"]}
+{"id": "11725309", "labels": ["FUEL/PROPULSION SYSTEM", "POWER TRAIN"]}
+{"id": "11725394", "labels": ["SUSPENSION"]}
+{"id": "11725568", "labels": ["ENGINE"]}
+{"id": "11725583", "labels": ["POWER TRAIN"]}
+{"id": "11725627", "labels": ["POWER TRAIN"]}
+{"id": "11725665", "labels": ["ENGINE"]}
+{"id": "11725784", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11726243", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11726356", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE", "VEHICLE SPEED CONTROL"]}
+{"id": "11726498", "labels": ["TIRES"]}
+{"id": "11726511", "labels": ["ENGINE"]}
+{"id": "11726796", "labels": ["STRUCTURE"]}
+{"id": "11726855", "labels": ["SEATS"]}
+{"id": "11727148", "labels": ["ENGINE"]}
+{"id": "11727192", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11727265", "labels": ["AIR BAGS", "STEERING"]}
+{"id": "11727609", "labels": ["STEERING"]}
+{"id": "11727769", "labels": ["ELECTRICAL SYSTEM", "FORWARD COLLISION AVOIDANCE"]}
+{"id": "11728104", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11728490", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11728555", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11728894", "labels": ["AIR BAGS"]}
+{"id": "11728898", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11728900", "labels": ["ENGINE"]}
+{"id": "11728906", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11729008", "labels": ["ENGINE"]}
+{"id": "11729057", "labels": ["ENGINE"]}
+{"id": "11729062", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11729063", "labels": ["SERVICE BRAKES"]}
+{"id": "11729149", "labels": ["STEERING", "SUSPENSION"]}
+{"id": "11729311", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11729424", "labels": ["SERVICE BRAKES"]}
+{"id": "11729705", "labels": ["POWER TRAIN"]}
+{"id": "11729804", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11729822", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11730010", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11730097", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11730333", "labels": ["STEERING"]}
+{"id": "11730502", "labels": ["ELECTRICAL SYSTEM", "SEAT BELTS"]}
+{"id": "11730512", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11730935", "labels": ["ENGINE"]}
+{"id": "11730980", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11731047", "labels": ["ENGINE"]}
+{"id": "11731128", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11731151", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11731453", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11731573", "labels": ["STRUCTURE"]}
+{"id": "11731607", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11731744", "labels": ["EXTERIOR LIGHTING", "VISIBILITY/WIPER"]}
+{"id": "11732163", "labels": ["SERVICE BRAKES", "VEHICLE SPEED CONTROL"]}
+{"id": "11732234", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11732307", "labels": ["SERVICE BRAKES"]}
+{"id": "11732373", "labels": ["STEERING"]}
+{"id": "11732533", "labels": ["POWER TRAIN"]}
+{"id": "11732878", "labels": ["ELECTRICAL SYSTEM", "FUEL/PROPULSION SYSTEM", "SERVICE BRAKES"]}
+{"id": "11733093", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11733094", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11733241", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11733250", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11733282", "labels": ["ENGINE"]}
+{"id": "11733624", "labels": ["STEERING"]}
+{"id": "11733758", "labels": ["ENGINE"]}
+{"id": "11734159", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11734364", "labels": ["STRUCTURE"]}
+{"id": "11734407", "labels": ["STRUCTURE"]}
+{"id": "11734721", "labels": ["SERVICE BRAKES"]}
+{"id": "11734769", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11734825", "labels": ["STEERING"]}
+{"id": "11735227", "labels": ["ENGINE"]}
+{"id": "11735288", "labels": ["ENGINE"]}
+{"id": "11735289", "labels": ["ENGINE"]}
+{"id": "11735474", "labels": ["ENGINE"]}
+{"id": "11735478", "labels": ["SERVICE BRAKES"]}
+{"id": "11736592", "labels": ["ELECTRICAL SYSTEM", "LATCHES/LOCKS/LINKAGES", "STRUCTURE"]}
+{"id": "11736811", "labels": ["POWER TRAIN"]}
+{"id": "11736859", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11736876", "labels": ["POWER TRAIN"]}
+{"id": "11736945", "labels": ["STRUCTURE"]}
+{"id": "11737123", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11737181", "labels": ["ENGINE"]}
+{"id": "11737489", "labels": ["ENGINE"]}
+{"id": "11737491", "labels": ["SERVICE BRAKES"]}
+{"id": "11737654", "labels": ["STEERING"]}
+{"id": "11737794", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11738037", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11738139", "labels": ["AIR BAGS", "SEAT BELTS"]}
+{"id": "11738277", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11738476", "labels": ["AIR BAGS", "SERVICE BRAKES"]}
+{"id": "11738658", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11738799", "labels": ["SERVICE BRAKES"]}
+{"id": "11738815", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11738878", "labels": ["POWER TRAIN"]}
+{"id": "11738940", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11739031", "labels": ["ENGINE"]}
+{"id": "11739127", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11739204", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11739320", "labels": ["ENGINE"]}
+{"id": "11739363", "labels": ["POWER TRAIN"]}
+{"id": "11739394", "labels": ["AIR BAGS"]}
+{"id": "11739608", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11739856", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11740004", "labels": ["ELECTRICAL SYSTEM", "STRUCTURE"]}
+{"id": "11740014", "labels": ["SEATS"]}
+{"id": "11740159", "labels": ["AIR BAGS"]}
+{"id": "11740547", "labels": ["ENGINE"]}
+{"id": "11740674", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11740692", "labels": ["ENGINE"]}
+{"id": "11740874", "labels": ["STRUCTURE"]}
+{"id": "11740967", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11741126", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11741268", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11741454", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11741512", "labels": ["SERVICE BRAKES"]}
+{"id": "11741526", "labels": ["AIR BAGS"]}
+{"id": "11741770", "labels": ["STEERING"]}
+{"id": "11741998", "labels": ["STEERING"]}
+{"id": "11742065", "labels": ["ENGINE"]}
+{"id": "11742234", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11742325", "labels": ["ENGINE"]}
+{"id": "11742360", "labels": ["ENGINE"]}
+{"id": "11742673", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11742693", "labels": ["STRUCTURE"]}
+{"id": "11743092", "labels": ["AIR BAGS"]}
+{"id": "11743179", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11743483", "labels": ["SUSPENSION"]}
+{"id": "11743497", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11743599", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11743624", "labels": ["POWER TRAIN"]}
+{"id": "11743746", "labels": ["ENGINE"]}
+{"id": "11743755", "labels": ["ENGINE"]}
+{"id": "11743791", "labels": ["ENGINE"]}
+{"id": "11743799", "labels": ["BACK OVER PREVENTION", "ELECTRICAL SYSTEM"]}
+{"id": "11743810", "labels": ["POWER TRAIN"]}
+{"id": "11743845", "labels": ["SEATS"]}
+{"id": "11744034", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11744123", "labels": ["STEERING"]}
+{"id": "11744282", "labels": ["ENGINE"]}
+{"id": "11744457", "labels": ["POWER TRAIN"]}
+{"id": "11744638", "labels": ["POWER TRAIN"]}
+{"id": "11744695", "labels": ["ENGINE"]}
+{"id": "11745028", "labels": ["ENGINE"]}
+{"id": "11745289", "labels": ["POWER TRAIN"]}
+{"id": "11745363", "labels": ["AIR BAGS"]}
+{"id": "11745444", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11745839", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11745851", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11745938", "labels": ["POWER TRAIN"]}
+{"id": "11745963", "labels": ["ENGINE"]}
+{"id": "11746035", "labels": ["STRUCTURE"]}
+{"id": "11746053", "labels": ["AIR BAGS"]}
+{"id": "11746054", "labels": ["ENGINE"]}
+{"id": "11746175", "labels": ["ENGINE"]}
+{"id": "11746367", "labels": ["WHEELS"]}
+{"id": "11746403", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11746476", "labels": ["STRUCTURE"]}
+{"id": "11746690", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11746930", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11747079", "labels": ["STEERING"]}
+{"id": "11747177", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11747334", "labels": ["SEATS"]}
+{"id": "11747407", "labels": ["POWER TRAIN"]}
+{"id": "11747507", "labels": ["ENGINE"]}
+{"id": "11747626", "labels": ["POWER TRAIN"]}
+{"id": "11747665", "labels": ["SERVICE BRAKES"]}
+{"id": "11747717", "labels": ["POWER TRAIN"]}
+{"id": "11747817", "labels": ["STEERING"]}
+{"id": "11747860", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11748043", "labels": ["POWER TRAIN", "SERVICE BRAKES"]}
+{"id": "11748044", "labels": ["SERVICE BRAKES"]}
+{"id": "11748047", "labels": ["ENGINE"]}
+{"id": "11748082", "labels": ["POWER TRAIN"]}
+{"id": "11748142", "labels": ["ENGINE"]}
+{"id": "11748145", "labels": ["SUSPENSION", "WHEELS"]}
+{"id": "11748400", "labels": ["POWER TRAIN"]}
+{"id": "11748433", "labels": ["ELECTRICAL SYSTEM", "POWER TRAIN"]}
+{"id": "11748435", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11748440", "labels": ["STRUCTURE"]}
+{"id": "11748643", "labels": ["POWER TRAIN"]}
+{"id": "11748804", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11748844", "labels": ["ENGINE"]}
+{"id": "11748894", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11749083", "labels": ["POWER TRAIN", "STEERING"]}
+{"id": "11749213", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11749248", "labels": ["STEERING"]}
+{"id": "11749287", "labels": ["STRUCTURE"]}
+{"id": "11749395", "labels": ["POWER TRAIN"]}
+{"id": "11749476", "labels": ["ENGINE"]}
+{"id": "11749695", "labels": ["ENGINE"]}
+{"id": "11749873", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11749961", "labels": ["ENGINE"]}
+{"id": "11750047", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11750096", "labels": ["ELECTRICAL SYSTEM", "LANE DEPARTURE"]}
+{"id": "11750193", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11750488", "labels": ["POWER TRAIN"]}
+{"id": "11750641", "labels": ["STRUCTURE"]}
+{"id": "11750850", "labels": ["AIR BAGS", "SEAT BELTS"]}
+{"id": "11750867", "labels": ["AIR BAGS"]}
+{"id": "11750917", "labels": ["POWER TRAIN"]}
+{"id": "11751294", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11751355", "labels": ["AIR BAGS"]}
+{"id": "11751508", "labels": ["STEERING"]}
+{"id": "11751572", "labels": ["EXTERIOR LIGHTING"]}
+{"id": "11751691", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "POWER TRAIN"]}
+{"id": "11751846", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11752147", "labels": ["POWER TRAIN"]}
+{"id": "11752161", "labels": ["ELECTRICAL SYSTEM", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11752464", "labels": ["AIR BAGS"]}
+{"id": "11752465", "labels": ["STRUCTURE"]}
+{"id": "11752546", "labels": ["POWER TRAIN"]}
+{"id": "11752701", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11752955", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11752980", "labels": ["TIRES"]}
+{"id": "11753057", "labels": ["STRUCTURE"]}
+{"id": "11753160", "labels": ["ELECTRICAL SYSTEM", "SERVICE BRAKES"]}
+{"id": "11753220", "labels": ["STRUCTURE", "VISIBILITY/WIPER"]}
+{"id": "11753457", "labels": ["STRUCTURE"]}
+{"id": "11753809", "labels": ["AIR BAGS", "SEAT BELTS"]}
+{"id": "11753910", "labels": ["AIR BAGS"]}
+{"id": "11753976", "labels": ["STEERING"]}
+{"id": "11754223", "labels": ["ENGINE"]}
+{"id": "11754467", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11754555", "labels": ["ENGINE"]}
+{"id": "11754694", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11754961", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11754975", "labels": ["AIR BAGS"]}
+{"id": "11755144", "labels": ["ENGINE"]}
+{"id": "11755184", "labels": ["AIR BAGS"]}
+{"id": "11755328", "labels": ["ENGINE"]}
+{"id": "11755455", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11755488", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11755721", "labels": ["SERVICE BRAKES"]}
+{"id": "11756039", "labels": ["AIR BAGS", "ELECTRICAL SYSTEM"]}
+{"id": "11756113", "labels": ["SERVICE BRAKES"]}
+{"id": "11756291", "labels": ["ENGINE"]}
+{"id": "11756422", "labels": ["POWER TRAIN"]}
+{"id": "11756837", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11757114", "labels": ["STEERING"]}
+{"id": "11757238", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11757337", "labels": ["POWER TRAIN"]}
+{"id": "11757597", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11757782", "labels": ["ENGINE"]}
+{"id": "11757894", "labels": ["ENGINE"]}
+{"id": "11757924", "labels": ["ENGINE"]}
+{"id": "11758017", "labels": ["STEERING"]}
+{"id": "11758061", "labels": ["FORWARD COLLISION AVOIDANCE"]}
+{"id": "11758174", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11758387", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11758430", "labels": ["STRUCTURE"]}
+{"id": "11758536", "labels": ["ENGINE"]}
+{"id": "11758546", "labels": ["POWER TRAIN"]}
+{"id": "11758589", "labels": ["POWER TRAIN"]}
+{"id": "11758607", "labels": ["ELECTRICAL SYSTEM", "EXTERIOR LIGHTING"]}
+{"id": "11758668", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11758820", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11758838", "labels": ["ENGINE"]}
+{"id": "11758860", "labels": ["ENGINE"]}
+{"id": "11758985", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11759003", "labels": ["SUSPENSION"]}
+{"id": "11759147", "labels": ["POWER TRAIN"]}
+{"id": "11759167", "labels": ["EXTERIOR LIGHTING", "STRUCTURE"]}
+{"id": "11759342", "labels": ["SERVICE BRAKES"]}
+{"id": "11759428", "labels": ["ENGINE"]}
+{"id": "11759506", "labels": ["ENGINE", "POWER TRAIN"]}
+{"id": "11759522", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11759560", "labels": ["ENGINE", "POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11759746", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11759930", "labels": ["STEERING"]}
+{"id": "11759988", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11760124", "labels": ["STRUCTURE"]}
+{"id": "11760285", "labels": ["STEERING"]}
+{"id": "11760569", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11760660", "labels": ["ENGINE"]}
+{"id": "11761199", "labels": ["ELECTRICAL SYSTEM", "ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11761249", "labels": ["SERVICE BRAKES"]}
+{"id": "11761373", "labels": ["ENGINE"]}
+{"id": "11761585", "labels": ["VISIBILITY/WIPER"]}
+{"id": "11762029", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11762052", "labels": ["STEERING"]}
+{"id": "11762138", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11762223", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11762463", "labels": ["ELECTRICAL SYSTEM", "LANE DEPARTURE"]}
+{"id": "11762486", "labels": ["ENGINE"]}
+{"id": "11763105", "labels": ["ELECTRICAL SYSTEM", "STEERING"]}
+{"id": "11763160", "labels": ["STRUCTURE"]}
+{"id": "11763175", "labels": ["ENGINE"]}
+{"id": "11763237", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11763453", "labels": ["ENGINE"]}
+{"id": "11763551", "labels": ["ENGINE"]}
+{"id": "11763570", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11763855", "labels": ["ENGINE"]}
+{"id": "11764266", "labels": ["ENGINE"]}
+{"id": "11764383", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11764388", "labels": ["ELECTRICAL SYSTEM", "ELECTRONIC STABILITY CONTROL (ESC)", "SERVICE BRAKES"]}
+{"id": "11764431", "labels": ["POWER TRAIN"]}
+{"id": "11764594", "labels": ["POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11764693", "labels": ["SERVICE BRAKES"]}
+{"id": "11764766", "labels": ["ENGINE"]}
+{"id": "11764803", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11765030", "labels": ["POWER TRAIN"]}
+{"id": "11765053", "labels": ["SERVICE BRAKES"]}
+{"id": "11765164", "labels": ["FUEL/PROPULSION SYSTEM"]}
+{"id": "11765462", "labels": ["ENGINE", "SERVICE BRAKES"]}
+{"id": "11765647", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11765690", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11765703", "labels": ["ENGINE"]}
+{"id": "11765719", "labels": ["ELECTRICAL SYSTEM"]}
+{"id": "11765772", "labels": ["ENGINE"]}
+{"id": "11765799", "labels": ["AIR BAGS", "SEAT BELTS"]}
+{"id": "11766006", "labels": ["ENGINE"]}
+{"id": "11766012", "labels": ["ENGINE"]}
+{"id": "11766039", "labels": ["STRUCTURE"]}
+{"id": "11766119", "labels": ["ENGINE"]}
+{"id": "11766351", "labels": ["ENGINE"]}
+{"id": "11766596", "labels": ["BACK OVER PREVENTION"]}
+{"id": "11766664", "labels": ["SERVICE BRAKES", "VEHICLE SPEED CONTROL"]}
+{"id": "11766682", "labels": ["ELECTRICAL SYSTEM", "ENGINE"]}
+{"id": "11766839", "labels": ["FUEL/PROPULSION SYSTEM", "POWER TRAIN", "VEHICLE SPEED CONTROL"]}
+{"id": "11766886", "labels": ["SUSPENSION"]}
+{"id": "11766892", "labels": ["FORWARD COLLISION AVOIDANCE", "SERVICE BRAKES"]}
+{"id": "11766907", "labels": ["VEHICLE SPEED CONTROL"]}
+{"id": "11766917", "labels": ["STEERING"]}
+{"id": "11766932", "labels": ["ENGINE", "FUEL/PROPULSION SYSTEM"]}
+{"id": "11766957", "labels": ["WHEELS"]}
+{"id": "11767055", "labels": ["SERVICE BRAKES"]}
+{"id": "11767086", "labels": ["FUEL/PROPULSION SYSTEM"]}
