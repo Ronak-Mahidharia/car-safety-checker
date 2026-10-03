@@ -93,6 +93,7 @@ def test_recalls_are_searched_under_related_names_with_warnings_first(monkeypatc
     first = out["recalls"][0]
     assert (first["campaign"], first["park_outside"], first["matches_description"], first["filed_under"]) == ("26V540000", True, True, "AIR")
     assert first["reported"] == "2026-08-20"
+    assert "over_the_air_fix" not in first  # NHTSA's mark isn't set on this recall, so nothing is claimed either way
     assert mcp_server.VIN_LOOKUP in out["note"]
 
 
@@ -145,3 +146,20 @@ def test_when_nhtsa_is_down_the_tool_says_so(monkeypatch):
     monkeypatch.setattr(mcp_server, "fetch", offline)
     result = run("vehicle_recalls", {"year": 2019, "make": "HONDA", "model": "CR-V"})
     assert result.is_error and "Couldn't reach NHTSA" in result.content[0].text
+
+
+def test_the_over_the_air_mark_is_sent_only_when_nhtsa_sets_it(monkeypatch):
+    # NHTSA's mark is reliable when set but often missing: in 53 recalls for 7 electric vehicles, only 11 of the
+    # 18 over-the-air remedies had it (checked Oct 3, 2026). So "false" is never sent: it could read as
+    # "no over-the-air fix".
+    fake_nhtsa(monkeypatch, {
+        "/products/vehicle/models?modelYear=2023&make=TESLA&issueType=c": (200, {"results": [{"model": "MODEL 3"}]}),
+        "/recalls/recallsByVehicle?make=TESLA&model=MODEL%203&modelYear=2023": (200, {"results": [
+            recall_row("23V001000", "02/01/2023", "STEERING", overTheAirUpdate=True),
+            recall_row("23V002000", "02/02/2023", "STEERING"),
+        ]}),
+    })
+    recalls = run("vehicle_recalls", {"year": 2023, "make": "TESLA", "model": "MODEL 3"}).structured_content["recalls"]
+    assert {r["campaign"]: r.get("over_the_air_fix", "not sent") for r in recalls} == {"23V001000": True, "23V002000": "not sent"}
+    item = tools()["vehicle_recalls"].output_schema["$defs"]["RecallItem"]
+    assert "over_the_air_fix" in item["properties"] and "over_the_air_fix" not in item["required"]

@@ -17,7 +17,7 @@ from __future__ import annotations
 import difflib
 from functools import lru_cache
 from pathlib import Path
-from typing import Annotated, TypedDict
+from typing import Annotated, NotRequired, TypedDict
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -95,7 +95,10 @@ class RecallItem(TypedDict):
     remedy: str
     do_not_drive: bool
     park_outside: bool
-    over_the_air_fix: bool
+    # Present (true) only when NHTSA marks the remedy as an over-the-air update. NHTSA's mark is reliable
+    # when set but often missing: in 53 recalls for 7 electric vehicles (checked Oct 3, 2026), only 11 of the
+    # 18 remedies that mention an over-the-air update had it. So "false" is never sent: it could read as "no OTA fix".
+    over_the_air_fix: NotRequired[bool]
     matches_description: bool
     filed_under: str
     nhtsa_record: str
@@ -240,6 +243,8 @@ def vehicle_recalls(year: Year, make: Make, model: Model,
     With a description, recalls for the likely components come next and are marked. No recall is left
     out because of the description: NHTSA's API names one component per recall, even when a recall
     covers several parts. Recalls are searched under the model name and every related name NHTSA uses.
+    over_the_air_fix appears only when NHTSA marks the remedy as an over-the-air update. NHTSA leaves
+    that mark off many over-the-air remedies, so when it's absent, read the remedy text.
     """
     labels = likely_components(description) if description else []
     vehicle, names, models = resolve(year, make, model)
@@ -247,21 +252,25 @@ def vehicle_recalls(year: Year, make: Make, model: Model,
     if not found:
         check_name(vehicle, models, lambda: gather(nhtsa.complaints, by_odi_number, vehicle, names))
     shown = order_recalls(found, labels)
-    items: list[RecallItem] = [{
-        "campaign": s.recall.campaign,
-        "reported": s.recall.received,
-        "component": s.recall.component,
-        "category": s.recall.label,
-        "summary": s.recall.summary,
-        "consequence": s.recall.consequence,
-        "remedy": s.recall.remedy,
-        "do_not_drive": s.recall.do_not_drive,
-        "park_outside": s.recall.park_outside,
-        "over_the_air_fix": s.recall.over_the_air,
-        "matches_description": s.matches,
-        "filed_under": s.recall.listed_as,
-        "nhtsa_record": s.recall.source,
-    } for s in shown[:MAX_RECALLS]]
+    items: list[RecallItem] = []
+    for s in shown[:MAX_RECALLS]:
+        item: RecallItem = {
+            "campaign": s.recall.campaign,
+            "reported": s.recall.received,
+            "component": s.recall.component,
+            "category": s.recall.label,
+            "summary": s.recall.summary,
+            "consequence": s.recall.consequence,
+            "remedy": s.recall.remedy,
+            "do_not_drive": s.recall.do_not_drive,
+            "park_outside": s.recall.park_outside,
+            "matches_description": s.matches,
+            "filed_under": s.recall.listed_as,
+            "nhtsa_record": s.recall.source,
+        }
+        if s.recall.over_the_air:  # only when NHTSA sets it (see RecallItem)
+            item["over_the_air_fix"] = True
+        items.append(item)
     return {
         "vehicle": f"{vehicle.year} {vehicle.make} {vehicle.model}",
         "searched_names": names,
