@@ -1,11 +1,14 @@
 """Build the fixtures that check the website's TypeScript gives the same answers as the Python code.
 
-Writes two files to web/src/lib/fixtures/:
+Writes three files to web/src/lib/fixtures/:
   - labels.json: every component name in NHTSA's complaint files (received 2015 to 2026) and recall
     file, with the label src/carsafety/labels.py gives it. It also has complaint-API-style lists of
     several components ("ENGINE,FUEL SYSTEM, GASOLINE") and how they split.
   - privacy.json: made-up text with emails, phone numbers, and VINs, and what
     src/carsafety/privacy.py makes of it.
+  - names.json: vehicle names and how src/carsafety/vehicles.py compares them: names NHTSA uses for
+    the same or similar vehicles, edge cases, and 1,000 names picked at random from NHTSA's recall file
+    (web/public/vehicles/). tests/test_vehicles.py checks the Python code still gives these answers.
 
 Needs the files from scripts/download_data.py. Only the component column is kept from each row.
 
@@ -15,6 +18,7 @@ from __future__ import annotations
 
 import csv
 import json
+import random
 import re
 from pathlib import Path
 
@@ -22,6 +26,7 @@ from carsafety.complaints import FIELDS as COMPLAINT_FIELDS
 from carsafety.labels import normalize
 from carsafety.privacy import scrub
 from carsafety.recalls import FIELDS as RECALL_FIELDS
+from carsafety.vehicles import INDEX, closest_recall_names, identify, recall_names, related, same_name, within, words
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW, OUT = ROOT / "data" / "raw", ROOT / "web" / "src" / "lib" / "fixtures"
@@ -54,6 +59,52 @@ PRIVACY_CASES = [
     "THE DEALER (DEALER NAME) SAID CALL 800 555 0199 EXT 12 OR EMAIL SERVICE@DEALER.COM",
     "Line\nbreaks\r\naround 555-123-4567\nand\tTABS",
 ]
+
+
+# Names NHTSA uses for the same or similar vehicles (seen in its API on Oct 3, 2026): names in its vehicle
+# list and recall file, and names complaint records give. "CRV" is a misspelling someone could type.
+NAME_GROUPS = {
+    ("2022", "FORD"): ["MUSTANG", "MUSTANG MACH-E", "MUSTANG MACH E", "MUSTANG GT 500"],
+    ("2023", "FORD"): ["F-150", "F-150 LIGHTNING", "F-150 LIGHTNING BEV", "F-150 HYBRID", "F-150 (REGULAR CAB) GAS",
+                       "F-150 (SUPER CAB) GAS", "F-150 (SUPER CREW) GAS", "F-150 (SUPER CREW) HEV",
+                       "F-150 (SUPER CREW) LIGHTNING BEV"],
+    ("2026", "LUCID"): ["AIR", "AIR BEV", "GRAVITY", "GRAVITY BEV"],
+    ("2024", "CHEVROLET"): ["BLAZER", "BLAZER EV", "TRAILBLAZER", "EQUINOX", "EQUINOX EV"],
+    ("2019", "HONDA"): ["CR-V", "CRV", "HR-V", "CIVIC", "ACCORD"],
+    ("2023", "TESLA"): ["MODEL 3", "MODEL Y", "MODEL Y (ALL VARIANTS)", "MODEL Y RWD EARLY RELEASE", "MODEL Y RWD LATER RELEASE"],
+    ("2023", "VOLKSWAGEN"): ["ID 4", "ID.4"],
+}
+NAME_EDGE_CASES = ["", "   ", "-", "air bev", " Air  Bev ", "MODEL Y (ALL VARIANTS) ", "C-HR", "C HR", "CHR", "E-TRON GT",
+                   "AIRSTREAM", "MODEL 3 LONG RANGE", "GRAND CHEROKEE", "GRAND CHEROKEE L", "GRAND WAGONEER", "ÉCLAIR 2"]
+# Which model a vehicle is, from the models its complaint records name (None: the record names none).
+IDENTIFY_CASES = [
+    ["AIR BEV", ["AIR", "AIR", None]],
+    ["AIR", []],
+    ["MUSTANG MACH-E", ["MUSTANG MACH E"]],
+    ["F-150 (SUPER CREW) LIGHTNING BEV", ["F-150 LIGHTNING BEV", "F-150 HYBRID", "F-150 LIGHTNING BEV"]],
+    ["F-150 (SUPER CREW) HEV", ["F-150 HYBRID"]],
+    ["F-150", ["F-150", "F-150 HYBRID"]],
+    ["CR-V", ["CR-V", None]],
+    ["E-CLASS", ["E 450", "E 350", "E350", "E450", "AMG E53"]],
+    ["TBD", [None, None]],
+]
+
+
+def name_cases() -> dict[str, list]:
+    """How src/carsafety/vehicles.py compares names, for web/src/lib/vehicles.test.ts."""
+    years = json.loads((INDEX / "years.json").read_text(encoding="utf-8"))
+    every = sorted({model for year in years for models in recall_names(year).values() for model in models})
+    picked = random.Random(3).sample(every, 1000)
+    grouped = [name for names in NAME_GROUPS.values() for name in names]
+    words_cases = [[name, words(name)] for name in dict.fromkeys(grouped + NAME_EDGE_CASES + picked)]
+    pair_names = [names for names in NAME_GROUPS.values()] + [NAME_EDGE_CASES]
+    pairs = [[a, b, same_name(a, b), within(a, b), related(a, b)] for names in pair_names for a in names for b in names]
+    closest = []
+    for (year, make), names in NAME_GROUPS.items():
+        file_names = list(recall_names(year).get(make, ()))
+        closest += [[name, file_names, closest_recall_names(name, file_names)] for name in names]
+    return {"words": words_cases, "pairs": pairs, "closest": closest,
+            "identify": [[chosen, models, identify(chosen, models)] for chosen, models in IDENTIFY_CASES]}
 
 
 def components(path: Path, fields: list[str], name: str) -> set[str]:
@@ -96,8 +147,11 @@ def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     write(OUT / "labels.json", {"normalize": normalize_cases, "split": split_cases})
     write(OUT / "privacy.json", {"scrub": privacy_cases})
+    vehicle_names = name_cases()
+    write(OUT / "names.json", vehicle_names)
     print(f"{len(names):,} component names ({len(tops)} top-level), {len(split_cases):,} lists, "
-          f"{len(privacy_cases)} privacy cases -> {OUT.relative_to(ROOT)}")
+          f"{len(privacy_cases)} privacy cases, {len(vehicle_names['words']):,} vehicle names and "
+          f"{len(vehicle_names['pairs']):,} pairs -> {OUT.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

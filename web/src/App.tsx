@@ -4,8 +4,8 @@ import { ExternalLink, plural, Results, type Analysis } from "./components/Resul
 import { VehiclePicker } from "./components/VehiclePicker";
 import { cleanAddress, readHash } from "./lib/hash";
 import { matchComplaints, orderRecalls } from "./lib/match";
-import { NhtsaError, records as loadRecords, type Complaint, type Recall, type Vehicle } from "./lib/nhtsa";
-import { relatedNames, vehicleModels } from "./lib/vehicles";
+import { NhtsaError, type Vehicle } from "./lib/nhtsa";
+import { recallNames, search, vehicleModels, type Found } from "./lib/vehicles";
 import { KeywordModel } from "./model/keywordModel";
 
 // The answer key only scored descriptions of at least 20 characters.
@@ -25,7 +25,7 @@ const EXAMPLES = [
 type Records =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "ready"; names: string[]; recalls: Recall[]; complaints: Complaint[] }
+  | ({ status: "ready" } & Found)
   | { status: "error"; message: string };
 
 const isComplete = (v: Partial<Vehicle>): v is Vehicle => Boolean(v.year && v.make && v.model);
@@ -63,13 +63,17 @@ export function App() {
     }
     const controller = new AbortController();
     setRecords({ status: "loading" });
-    // NHTSA may file the same vehicle under related model names ("AIR" and "AIR BEV"), so search them all.
-    vehicleModels(chosen.year, chosen.make, controller.signal)
-      .catch(() => [chosen.model])
-      .then(async (models) => {
-        const names = relatedNames(chosen.model, models);
-        const found = await loadRecords(chosen, names, controller.signal);
-        if (!controller.signal.aborted) setRecords({ status: "ready", names, ...found });
+    // NHTSA names the same vehicle in more than one way, so the search covers related names and uses
+    // the complaint records to sort out which recalls and complaints are this vehicle's (see vehicles.ts).
+    Promise.all([
+      vehicleModels(chosen.year, chosen.make, controller.signal).catch(() => [chosen.model]),
+      recallNames(chosen.year)
+        .then((file) => file[chosen.make] ?? [])
+        .catch(() => []),
+    ])
+      .then(async ([models, fileNames]) => {
+        const found = await search(chosen, models, fileNames, controller.signal);
+        if (!controller.signal.aborted) setRecords({ status: "ready", ...found });
       })
       .catch((error: unknown) => {
         if (controller.signal.aborted) return;
@@ -96,6 +100,7 @@ export function App() {
     if (records.status !== "ready") return null;
     return {
       recalls: orderRecalls(records.recalls, analysis?.labels ?? []),
+      relatedRecalls: orderRecalls(records.relatedRecalls, analysis?.labels ?? []),
       matches:
         analysis && model
           ? matchComplaints(records.complaints, analysis.labels, analysis.description, (text) => model.vector(text))
@@ -127,7 +132,7 @@ export function App() {
       : records.status === "error"
         ? records.message
         : records.status === "ready" && isComplete(vehicle)
-          ? `Found ${plural(records.recalls.length, "recall", "recalls")} and ${plural(records.complaints.length, "owner complaint", "owner complaints")} for the ${vehicle.year} ${vehicle.make} ${vehicle.model}.`
+          ? `Found ${plural(records.recalls.length, "recall", "recalls")} and ${plural(records.complaints.length, "owner complaint", "owner complaints")} for the ${vehicle.year} ${vehicle.make} ${vehicle.model}${records.relatedRecalls.length ? `, and ${plural(records.relatedRecalls.length, "recall", "recalls")} under similar names` : ""}.`
           : "";
 
   return (
@@ -257,8 +262,11 @@ export function App() {
             <Results
               vehicle={vehicle}
               names={records.names}
+              models={records.models}
               recalls={view.recalls}
+              relatedRecalls={view.relatedRecalls}
               complaintCount={records.complaints.length}
+              leftOut={records.leftOut}
               analysis={analysis}
               matches={view.matches}
             />

@@ -103,9 +103,57 @@ def test_a_model_name_nhtsa_doesnt_use_is_an_error_not_no_recalls(monkeypatch):
         "/products/vehicle/models?modelYear=2019&make=HONDA&issueType=c": (200, listed),
         "/products/vehicle/models?modelYear=2019&make=HONDA&issueType=r": (200, listed),
     })
-    result = run("vehicle_recalls", {"year": 2019, "make": "HONDA", "model": "CRV"})
+    result = run("vehicle_recalls", {"year": 2019, "make": "HONDA", "model": "ACORD"})
     assert result.is_error
-    assert "Did you mean: CR-V" in result.content[0].text
+    assert "Did you mean: ACCORD" in result.content[0].text
+
+
+def test_spaces_and_punctuation_dont_matter_in_a_model_name(monkeypatch):
+    # "CRV" is spelled like NHTSA's "CR-V" apart from the hyphen, so it's searched as CR-V too.
+    fake_nhtsa(monkeypatch, {
+        "/products/vehicle/models?modelYear=2019&make=HONDA&issueType=c": (200, {"results": [{"model": "CR-V"}]}),
+        "/recalls/recallsByVehicle?make=HONDA&model=CR-V&modelYear=2019": (200, {"results": [
+            recall_row("19V865000", "05/12/2019", "STRUCTURE:FRAME AND MEMBERS")]}),
+    })
+    out = run("vehicle_recalls", {"year": 2019, "make": "HONDA", "model": "CRV"}).structured_content
+    assert out["searched_names"][:2] == ["CRV", "CR-V"]
+    assert [(r["campaign"], r["filed_under"]) for r in out["recalls"]] == [("19V865000", "CR-V")]
+
+
+def test_recalls_under_a_similar_name_for_another_vehicle_are_kept_apart(monkeypatch):
+    # 2022 Ford (checked Oct 3, 2026): Mach-E complaints are found under MUSTANG MACH-E and name MUSTANG MACH E, where
+    # its recalls are filed. The gasoline MUSTANG's recalls are listed apart. The campaigns here are made up.
+    complaint = {"odiNumber": 1, "dateComplaintFiled": "09/01/2025", "components": "ELECTRICAL SYSTEM", "summary": "It stopped.",
+                 "products": [{"type": "Vehicle", "productYear": "2022", "productMake": "FORD", "productModel": "MUSTANG MACH E"}]}
+    fake_nhtsa(monkeypatch, {
+        "/products/vehicle/models?modelYear=2022&make=FORD&issueType=c": (200, {"results": [{"model": "MUSTANG"}, {"model": "MUSTANG MACH-E"}]}),
+        "/complaints/complaintsByVehicle?make=FORD&model=MUSTANG%20MACH-E&modelYear=2022": (200, {"results": [complaint]}),
+        "/recalls/recallsByVehicle?make=FORD&model=MUSTANG%20MACH%20E&modelYear=2022": (200, {"results": [
+            recall_row("22V900001", "10/06/2022", "ELECTRICAL SYSTEM")]}),
+        "/recalls/recallsByVehicle?make=FORD&model=MUSTANG&modelYear=2022": (200, {"results": [
+            recall_row("22V900002", "16/02/2022", "AIR BAGS", parkIt=True)]}),
+    })
+    out = run("vehicle_recalls", {"year": 2022, "make": "FORD", "model": "MUSTANG MACH-E"}).structured_content
+    assert out["models_in_records"] == ["MUSTANG MACH E"]
+    assert ([r["campaign"] for r in out["recalls"]], out["recall_count"], out["safety_warnings"]) == (["22V900001"], 1, 0)
+    assert [(r["campaign"], r["filed_under"], r["do_not_drive"]) for r in out["related_recalls"]] == [("22V900002", "MUSTANG", True)]
+    assert out["related_safety_warnings"] == 1 and "Don't present them as this vehicle's recalls" in out["note"]
+
+
+def test_complaints_whose_records_name_another_model_are_left_out(monkeypatch):
+    # The 2023 "F-150 (SUPER CREW) LIGHTNING BEV" search also returns F-150 HYBRID complaints (checked Oct 3, 2026).
+    lightning = "F-150 (SUPER CREW) LIGHTNING BEV"
+    row = lambda odi, model: {"odiNumber": odi, "dateComplaintFiled": "09/01/2025", "components": "ENGINE", "summary": ENGINE_PROBLEM,
+                              "products": [{"type": "Vehicle", "productYear": "2023", "productMake": "FORD", "productModel": model}]}
+    fake_nhtsa(monkeypatch, {
+        "/products/vehicle/models?modelYear=2023&make=FORD&issueType=c": (200, {"results": [{"model": lightning}]}),
+        "/complaints/complaintsByVehicle?make=FORD&model=F-150%20(SUPER%20CREW)%20LIGHTNING%20BEV&modelYear=2023": (200, {"results": [
+            row(1, "F-150 LIGHTNING BEV"), row(2, "F-150 HYBRID")]}),
+    })
+    out = run("similar_complaints", {"year": 2023, "make": "FORD", "model": lightning, "description": ENGINE_PROBLEM}).structured_content
+    assert (out["complaint_count"], out["left_out"], out["models_in_records"]) == (1, 1, ["F-150 LIGHTNING BEV"])
+    assert [c["odi_number"] for c in out["complaints"]] == ["1"]
+    assert "1 complaint about another model (F-150 HYBRID: 1), which is left out" in out["note"]
 
 
 def test_complaints_are_matched_ranked_and_kept_private(monkeypatch):
