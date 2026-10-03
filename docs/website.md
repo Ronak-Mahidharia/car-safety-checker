@@ -1,6 +1,6 @@
 # The website
 
-Everything here was checked on Oct 2, 2026.
+Everything here was checked on Oct 2, 2026, unless another date is given.
 
 ## What it does
 1. You choose the model year, make, and model.
@@ -21,6 +21,7 @@ It never says a car is safe, and it always points to NHTSA's official VIN lookup
 | A vehicle with no records comes back as HTTP 400 with an empty list | Treated as "no records" |
 | Recall dates are day/month/year, while complaint dates are month/day/year. Recall 19V865000's "05/12/2019" is Dec 5, 2019 in NHTSA's recall file | Read separately, and tested against dates in the recall file |
 | `parkIt` is the Do Not Drive advisory and `parkOutSide` is Park Outside (checked against recalls 26V517000 and 26V540000 in the recall file) | Shown as badges and listed first |
+| `overTheAirUpdate` marks a remedy as an over-the-air update. It's reliable when set but often missing: in 53 recalls for seven electric vehicles (checked Oct 3, 2026), only 11 of the 18 remedies that mention an over-the-air update had it | The "Over-the-air fix" label appears only when the mark is set, and every recall shows NHTSA's remedy text under "Fix" |
 | A recall lists one component, even when the recall file lists several. Recall 20V771000 has 6 for the 2019 Honda Accord; the API shows 1 | Every recall is shown, not just the matching ones |
 | Each complaint record includes a partial VIN | Dropped as soon as the data arrives, and never kept or shown |
 | A complaint's components are joined by a comma with no space; names that contain a comma have a space after it ("FUEL SYSTEM, GASOLINE") | Split by that rule. None of NHTSA's 53 category names breaks it |

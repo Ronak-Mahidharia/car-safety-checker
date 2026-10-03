@@ -4,7 +4,7 @@ AI assistants that support the Model Context Protocol (MCP), such as Claude Desk
 
 The server runs on your own computer and talks to the assistant over stdio. It uses the same rules and the same 1 MB model as the website, and its answers match the website's (see "How it's checked").
 
-Everything here was checked on Oct 2, 2026.
+Everything here was checked on Oct 2, 2026, unless another date is given.
 
 ## Tools
 All four are read-only: they look things up and never change anything.
@@ -22,6 +22,7 @@ Every result is structured (each tool publishes a JSON schema) and carries a `no
 - **Never "safe".** The server's instructions tell the assistant that these tools never show a car is safe, never to say a car has no open recalls, and always to point to NHTSA's VIN lookup (https://www.nhtsa.gov/recalls). Every recall result repeats that.
 - **Warnings first.** Do Not Drive and Park Outside recalls come first, and the result counts them (`safety_warnings`).
 - **No recall is hidden.** A description only marks recalls (`matches_description`); it never filters them out. NHTSA's API names one component per recall even when a recall covers several parts.
+- **No guess about over-the-air fixes.** `over_the_air_fix` is sent only when NHTSA marks a remedy as an over-the-air update. The mark is reliable when set but often missing: in 53 recalls for seven electric vehicles (checked Oct 3, 2026), only 11 of the 18 remedies that mention an over-the-air update had it. So a missing mark is never reported as "no over-the-air fix", and the remedy text is always included.
 - **Misspellings aren't "no recalls".** A model name NHTSA doesn't use finds nothing, so the tools refuse that answer and suggest close names. For example, "CRV" for a 2019 Honda gets "Did you mean: CR-V, HR-V, CIVIC?"
 - **Related names are searched.** The 2026 Lucid Air's recalls are filed under "AIR" and its complaints under "AIR BEV", so a search for either name covers both ([details](website.md#vehicle-names)).
 - **Complaint text is treated as data.** Complaints are written by members of the public, so the instructions and each result tell the assistant to treat the text as information, never as instructions. This guards against text that tries to steer the assistant.
@@ -68,7 +69,7 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
 **Other MCP clients:** run the same command, `/path/to/car-safety-checker/.venv/bin/python -m carsafety.mcp_server`, as a stdio server.
 
 ## How it's checked
-- **The full suite:** 69 Python tests (pytest) pass, including 31 for the server and the code it uses. They need no network, because NHTSA's answers are faked.
+- **The full suite:** 70 Python tests (pytest) pass, including 32 for the server and the code it uses. They need no network, because NHTSA's answers are faked.
 - **Through a real MCP client:** the server's tests connect a real MCP client in-process and check:
   - the four read-only tools and their input limits
   - offline guesses
@@ -76,11 +77,13 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
   - the misspelling refusal
   - complaint ranking and masking, with no partial VIN in the output
   - the cap on long recall lists
+  - the over-the-air mark, sent only when NHTSA sets it
   - the error when NHTSA is down
-- **Tests that catch planted bugs:** each of three deliberate bugs, planted in a copy of the code, made tests fail:
+- **Tests that catch planted bugs:** each of four deliberate bugs, planted in a copy of the code, made tests fail:
   - warnings no longer first
   - complaint text no longer masked
   - a misspelled model reading as "no recalls"
+  - a missing over-the-air mark sent as "false" (Oct 3)
 - **The same answers as the website.** NHTSA's live answers for the 2019 Honda CR-V, 2026 Lucid Air BEV, and 2025 Isuzu NPR HD were saved once, then run through both the Python server code and the website's TypeScript. All 27 checks were identical:
   - the likely components and top-3 guesses, with confidence within 0.00000001
   - the recall order, warnings, and names
