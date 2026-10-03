@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     steps:
       # Actions are pinned to exact commits, so a hijacked tag can't change what runs here.
@@ -29,7 +29,7 @@ jobs:
         run: python -m pytest -q
 
   web:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-26.04
     timeout-minutes: 10
     defaults:
       run:
