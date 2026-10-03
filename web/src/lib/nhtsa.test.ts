@@ -1,7 +1,7 @@
 // The API client, tested against a stand-in for NHTSA's server. The recall rows are shortened copies
 // of real public records (checked Oct 2, 2026); the complaint rows are made up.
 import { describe, expect, it } from "vitest";
-import { API, complaints, makes, modelYears, models, NhtsaError, recalls, records, type Vehicle } from "./nhtsa";
+import { API, complaints, makes, modelYears, models, NhtsaError, recalls, recordModel, type Vehicle } from "./nhtsa";
 
 type Route = { status?: number; body: unknown };
 
@@ -127,7 +127,7 @@ describe("complaints", () => {
     const { fetcher } = server({ [`/complaints/complaintsByVehicle?${crvQuery}`]: { body: { count: 1, results: [row] } } });
     const [complaint] = await complaints(crv, undefined, fetcher);
     expect(Object.keys(complaint).sort()).toEqual(
-      ["components", "crash", "deaths", "filed", "fire", "injuries", "labels", "listedAs", "odiNumber", "source", "summary"].sort(),
+      ["components", "crash", "deaths", "filed", "fire", "injuries", "labels", "listedAs", "odiNumber", "recordModel", "source", "summary"].sort(),
     );
     expect(JSON.stringify(complaint)).not.toContain(partialVin);
     // The period after the email is masked with it, exactly as the Python version does.
@@ -143,28 +143,27 @@ describe("complaints", () => {
       deaths: 0,
       source: `${API}/complaints/odinumber?odinumber=12345678`,
       listedAs: "CR-V",
+      recordModel: "CR-V",
     });
   });
 });
 
-describe("records under several model names", () => {
-  // The 2026 Lucid Air: recalls are filed under "AIR" and complaints under "AIR BEV" (checked Oct 2, 2026).
+describe("the model a complaint record names", () => {
+  // The complaint search takes NHTSA's vehicle-list names, but each record names the model the way recalls are
+  // filed: the 2026 Lucid Air's complaints are found under AIR BEV and name AIR (checked Oct 3, 2026).
   const lucid: Vehicle = { year: "2026", make: "LUCID", model: "AIR BEV" };
-  const empty = { status: 400, body: { results: [] } };
-  const complaintRow = (odiNumber: number) => ({ odiNumber, dateComplaintFiled: "09/01/2026", components: "ELECTRICAL SYSTEM", summary: "Screen went black." });
+  const product = (productYear: string, productMake: string, productModel: string, type = "Vehicle") => ({ type, productYear, productMake, productModel });
 
-  it("searches every name, keeps each record once, and notes the name it was filed under", async () => {
-    const { fetcher, calls } = server({
-      "/recalls/recallsByVehicle?make=LUCID&model=AIR%20BEV&modelYear=2026": empty,
-      "/complaints/complaintsByVehicle?make=LUCID&model=AIR%20BEV&modelYear=2026": { body: { results: [complaintRow(111), complaintRow(222)] } },
-      "/recalls/recallsByVehicle?make=LUCID&model=AIR&modelYear=2026": {
-        body: { results: [recallRow({ NHTSACampaignNumber: "26V540000", ReportReceivedDate: "20/08/2026", Component: "ELECTRICAL SYSTEM:SOFTWARE", parkOutSide: true })] },
-      },
-      "/complaints/complaintsByVehicle?make=LUCID&model=AIR&modelYear=2026": { body: { results: [complaintRow(222)] } },
-    });
-    const found = await records(lucid, ["AIR BEV", "AIR"], undefined, fetcher);
-    expect(calls).toHaveLength(4);
-    expect(found.recalls.map((r) => [r.campaign, r.listedAs, r.parkOutside])).toEqual([["26V540000", "AIR", true]]);
-    expect(found.complaints.map((c) => [c.odiNumber, c.listedAs])).toEqual([["111", "AIR BEV"], ["222", "AIR BEV"]]);
+  it("comes from the vehicle with the same model year and make, in capitals", () => {
+    expect(recordModel({ products: [product("2026", "LUCID", "AIR")] }, lucid)).toBe("AIR");
+    expect(recordModel({ products: [product("9999", "TBD", "TBD"), product("2026", "Lucid", " Air ")] }, lucid)).toBe("AIR");
+  });
+
+  it("is missing when no product fits", () => {
+    expect(recordModel({ products: [product("2026", "LUCID", "TBD")] }, lucid)).toBeNull();
+    expect(recordModel({ products: [product("2025", "LUCID", "AIR")] }, lucid)).toBeNull(); // another model year
+    expect(recordModel({ products: [product("2026", "LUCID", "AIR", "Equipment")] }, lucid)).toBeNull();
+    expect(recordModel({}, lucid)).toBeNull();
+    expect(recordModel({ products: "AIR" }, lucid)).toBeNull();
   });
 });

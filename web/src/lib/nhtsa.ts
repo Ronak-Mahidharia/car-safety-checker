@@ -4,6 +4,8 @@
 //   - A vehicle with no records comes back as HTTP 400 with an empty "results" list.
 //   - Each complaint record includes a partial VIN. It's dropped here and never kept or shown.
 //   - A recall lists one component, even when NHTSA's recall file lists several for the campaign.
+//   - The complaint search takes the names in NHTSA's vehicle list, but each complaint record names the
+//     model the way recalls are filed (checked Oct 3, 2026). vehicles.ts uses that to tell vehicles apart.
 import { parseDayFirst, parseMonthFirst } from "./dates";
 import { normalize, normalizeAll, splitComponents } from "./labels";
 import { scrub } from "./privacy";
@@ -43,6 +45,7 @@ export interface Complaint {
   deaths: number;
   source: string;
   listedAs: string; // the model name it was found under
+  recordModel: string | null; // the model the record itself names, which can differ (see vehicles.ts)
 }
 
 export class NhtsaError extends Error {}
@@ -122,8 +125,21 @@ export function toRecall(row: Row, listedAs: string): Recall {
   };
 }
 
+/** The model a complaint record names for the vehicle searched (same model year and make), if any. */
+export function recordModel(row: Row, vehicle: Vehicle): string | null {
+  const products = Array.isArray(row.products) ? row.products : [];
+  for (const product of products) {
+    if (typeof product !== "object" || product === null) continue;
+    const p = product as Row;
+    if (p.type !== "Vehicle" || text(p.productYear) !== vehicle.year || text(p.productMake).toUpperCase() !== vehicle.make) continue;
+    const model = text(p.productModel).toUpperCase();
+    if (model && model !== "TBD") return model;
+  }
+  return null;
+}
+
 /** Only these fields are kept. The partial VIN and everything else in the record are dropped. */
-export function toComplaint(row: Row, listedAs: string): Complaint {
+export function toComplaint(row: Row, vehicle: Vehicle): Complaint {
   const odiNumber = text(row.odiNumber);
   const components = splitComponents(text(row.components));
   return {
@@ -137,7 +153,8 @@ export function toComplaint(row: Row, listedAs: string): Complaint {
     injuries: count(row.numberOfInjuries),
     deaths: count(row.numberOfDeaths),
     source: `${API}/complaints/odinumber?${query({ odinumber: odiNumber })}`,
-    listedAs,
+    listedAs: vehicle.model,
+    recordModel: recordModel(row, vehicle),
   };
 }
 
@@ -153,28 +170,5 @@ export async function recalls(vehicle: Vehicle, signal?: AbortSignal, fetcher?: 
 
 export async function complaints(vehicle: Vehicle, signal?: AbortSignal, fetcher?: Fetcher): Promise<Complaint[]> {
   const rows = await results(`/complaints/complaintsByVehicle?${vehicleQuery(vehicle)}`, signal, fetcher);
-  return rows.map((row) => toComplaint(row, vehicle.model)).filter((c) => c.odiNumber);
-}
-
-/**
- * Recalls and complaints for a vehicle under each of its model names (see vehicles.ts), in one list
- * each. A record found under several names is kept once, under the first name in the list.
- */
-export async function records(vehicle: Vehicle, names: readonly string[], signal?: AbortSignal, fetcher?: Fetcher) {
-  const found = await Promise.all(
-    names.map((model) =>
-      Promise.all([recalls({ ...vehicle, model }, signal, fetcher), complaints({ ...vehicle, model }, signal, fetcher)]),
-    ),
-  );
-  return {
-    recalls: firstOf(found.flatMap(([r]) => r), (r) => r.campaign),
-    complaints: firstOf(found.flatMap(([, c]) => c), (c) => c.odiNumber),
-  };
-}
-
-/** Each item once, keeping the first of any repeats and the original order. */
-function firstOf<T>(items: T[], key: (item: T) => string): T[] {
-  const kept = new Map<string, T>();
-  for (const item of items) if (!kept.has(key(item))) kept.set(key(item), item);
-  return [...kept.values()];
+  return rows.map((row) => toComplaint(row, vehicle)).filter((c) => c.odiNumber);
 }

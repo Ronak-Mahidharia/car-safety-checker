@@ -97,7 +97,7 @@ def test_complaints_keep_only_what_is_needed():
     [complaint] = nhtsa.complaints(CRV, fetch)
     kept = asdict(complaint)
     assert sorted(kept) == sorted(["odi_number", "filed", "components", "labels", "summary", "crash", "fire", "injuries",
-                                   "deaths", "source", "listed_as"])
+                                   "deaths", "source", "listed_as", "record_model"])
     assert partial_vin not in json.dumps(kept)
     # The period after the email is masked with it, the same as privacy.py and the website.
     assert complaint.summary == "BRAKES FAILED. CALL ME AT [removed] OR [removed] VIN [removed]."
@@ -105,23 +105,20 @@ def test_complaints_keep_only_what_is_needed():
     assert complaint.labels == ("FUEL/PROPULSION SYSTEM", "SERVICE BRAKES")
     assert (complaint.odi_number, complaint.filed, complaint.crash, complaint.injuries) == ("12345678", "2026-09-29", True, 2)
     assert complaint.source == f"{API}/complaints/odinumber?odinumber=12345678"
+    assert (complaint.listed_as, complaint.record_model) == ("CR-V", "CR-V")
 
 
-def test_records_under_several_names_are_merged():
-    # The 2026 Lucid Air: recalls are filed under AIR and complaints under AIR BEV (checked Oct 2, 2026).
-    empty = (400, {"results": []})
-    complaint = lambda n: {"odiNumber": n, "dateComplaintFiled": "09/01/2026", "components": "ELECTRICAL SYSTEM", "summary": "Screen went black."}
-    fetch, calls = server({
-        "/recalls/recallsByVehicle?make=LUCID&model=AIR%20BEV&modelYear=2026": empty,
-        "/complaints/complaintsByVehicle?make=LUCID&model=AIR%20BEV&modelYear=2026": (200, {"results": [complaint(111), complaint(222)]}),
-        "/recalls/recallsByVehicle?make=LUCID&model=AIR&modelYear=2026": (200, {"results": [
-            recall_row(NHTSACampaignNumber="26V540000", ReportReceivedDate="20/08/2026", Component="ELECTRICAL SYSTEM:SOFTWARE", parkOutSide=True)]}),
-        "/complaints/complaintsByVehicle?make=LUCID&model=AIR&modelYear=2026": (200, {"results": [complaint(222)]}),
-    })
-    recalls, complaints = nhtsa.records(Vehicle("2026", "LUCID", "AIR BEV"), ["AIR BEV", "AIR"], fetch)
-    assert len(calls) == 4
-    assert [(r.campaign, r.listed_as, r.park_outside) for r in recalls] == [("26V540000", "AIR", True)]
-    assert [(c.odi_number, c.listed_as) for c in complaints] == [("111", "AIR BEV"), ("222", "AIR BEV")]
+def test_complaint_records_name_their_own_model():
+    # The complaint search takes NHTSA's vehicle-list names, but each record names the model the way recalls
+    # are filed: the 2026 Lucid Air's complaints are found under AIR BEV and name AIR (checked Oct 3, 2026).
+    lucid = Vehicle("2026", "LUCID", "AIR BEV")
+    product = lambda year, make, model, kind="Vehicle": {"type": kind, "productYear": year, "productMake": make, "productModel": model}
+    assert nhtsa.record_model({"products": [product("2026", "LUCID", "AIR")]}, lucid) == "AIR"
+    assert nhtsa.record_model({"products": [product("9999", "TBD", "TBD"), product("2026", "Lucid", " Air ")]}, lucid) == "AIR"
+    assert nhtsa.record_model({"products": [product("2026", "LUCID", "TBD")]}, lucid) is None
+    assert nhtsa.record_model({"products": [product("2025", "LUCID", "AIR")]}, lucid) is None  # another model year
+    assert nhtsa.record_model({"products": [product("2026", "LUCID", "AIR", kind="Equipment")]}, lucid) is None
+    assert nhtsa.record_model({}, lucid) is None and nhtsa.record_model({"products": "AIR"}, lucid) is None
 
 
 def test_vehicle_lists_combine_both_lists_without_repeats():

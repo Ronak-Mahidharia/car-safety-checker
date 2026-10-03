@@ -35,6 +35,7 @@ const complaint: Complaint = {
   deaths: 0,
   source: "https://api.nhtsa.gov/complaints/odinumber?odinumber=12345678",
   listedAs: "CR-V",
+  recordModel: "CR-V",
 };
 
 describe("App", () => {
@@ -57,8 +58,11 @@ describe("Results", () => {
     <Results
       vehicle={{ year: "2019", make: "HONDA", model: "CR-V" }}
       names={["CR-V"]}
+      models={["CR-V"]}
       recalls={recalls}
+      relatedRecalls={[]}
       complaintCount={1101}
+      leftOut={{}}
       analysis={analysis}
       matches={{ filedUnder: 1, shown: [{ complaint, similarity: 0.5 }] }}
     />,
@@ -99,15 +103,19 @@ describe("Results for a vehicle filed under more than one name", () => {
     <Results
       vehicle={{ year: "2026", make: "LUCID", model: "AIR BEV" }}
       names={["AIR BEV", "AIR"]}
+      models={["AIR"]}
       recalls={orderRecalls([recall("26V540000", "2026-08-20", "ELECTRICAL SYSTEM", { parkOutside: true, listedAs: "AIR" })], [])}
+      relatedRecalls={[]}
       complaintCount={6}
+      leftOut={{}}
       analysis={null}
       matches={null}
     />,
   );
 
   it("says which names were searched and which one each recall was filed under", () => {
-    expect(html).toContain("all of them were searched: AIR BEV, AIR.");
+    expect(html).toContain("NHTSA&#x27;s complaint records name this vehicle AIR. NHTSA uses more than one name");
+    expect(html).toContain("these were searched: AIR BEV, AIR.");
     expect(html).toContain("Filed under AIR");
     expect(html).toContain("Park Outside");
   });
@@ -118,8 +126,11 @@ describe("Results without any safety warning", () => {
     <Results
       vehicle={{ year: "2019", make: "HONDA", model: "CR-V" }}
       names={["CR-V"]}
+      models={["CR-V"]}
       recalls={orderRecalls([recall("21V000001", "2021-03-25", "TIRES")], [])}
+      relatedRecalls={[]}
       complaintCount={0}
+      leftOut={{}}
       analysis={null}
       matches={null}
     />,
@@ -128,6 +139,76 @@ describe("Results without any safety warning", () => {
   it("has no warnings tile, because a zero there could be read as 'safe'", () => {
     expect(html).not.toContain("Safety warnings");
     expect(html).not.toContain('class="warning-banner"');
+  });
+
+  it("doesn't mention other names when only the chosen one was searched", () => {
+    expect(html).not.toContain("these were searched");
+    expect(html).not.toContain("similar name");
+    expect(html).not.toContain("left out");
+  });
+});
+
+describe("Results with recalls under a similar name that may be another vehicle", () => {
+  // The 2022 Mustang Mach-E's records name MUSTANG MACH E; MUSTANG is the gasoline car (checked Oct 3, 2026).
+  // The Do Not Drive flag on the MUSTANG recall is made up, to show how a warning there is handled.
+  const html = renderToStaticMarkup(
+    <Results
+      vehicle={{ year: "2022", make: "FORD", model: "MUSTANG MACH-E" }}
+      names={["MUSTANG MACH-E", "MUSTANG", "MUSTANG MACH E"]}
+      models={["MUSTANG MACH E"]}
+      recalls={orderRecalls([recall("22V900001", "2022-06-10", "ELECTRICAL SYSTEM", { listedAs: "MUSTANG MACH E" })], [])}
+      relatedRecalls={orderRecalls([recall("22V900002", "2022-02-16", "AIR BAGS", { listedAs: "MUSTANG", doNotDrive: true })], [])}
+      complaintCount={138}
+      leftOut={{}}
+      analysis={null}
+      matches={null}
+    />,
+  );
+
+  it("counts only the vehicle's own recalls and warnings", () => {
+    expect(html).toMatch(/Recalls<\/dt><dd class="stat-value">1</);
+    expect(html).not.toContain("Safety warnings");
+  });
+
+  it("lists the similar name's recalls apart, after the vehicle's own, and says why", () => {
+    const own = html.indexOf("Recall 22V900001");
+    const heading = html.indexOf("Recalls under similar names");
+    expect(own).toBeGreaterThan(0);
+    expect(heading).toBeGreaterThan(own);
+    expect(html.indexOf("Recall 22V900002")).toBeGreaterThan(heading);
+    expect(html).toContain("This recall is filed under MUSTANG, a similar name that may be a different vehicle, so it isn&#x27;t counted above.");
+    expect(html).toContain("Filed under MUSTANG");
+  });
+
+  it("points out a safety warning filed under the similar name", () => {
+    expect(html).toContain('class="callout danger"');
+    expect(html).toContain("A safety warning is filed under a similar name (MUSTANG). Check whether it applies to your vehicle");
+  });
+});
+
+describe("Results when a search returned another model's complaints", () => {
+  const html = renderToStaticMarkup(
+    <Results
+      vehicle={{ year: "2023", make: "FORD", model: "F-150 (SUPER CREW) LIGHTNING BEV" }}
+      names={["F-150 (SUPER CREW) LIGHTNING BEV", "F-150", "F-150 LIGHTNING BEV"]}
+      models={["F-150 LIGHTNING BEV"]}
+      recalls={[]}
+      relatedRecalls={orderRecalls([recall("23V900002", "2023-02-10", "POWER TRAIN", { listedAs: "F-150" })], [])}
+      complaintCount={109}
+      leftOut={{ "F-150 HYBRID": 94 }}
+      analysis={null}
+      matches={null}
+    />,
+  );
+
+  it("says how many were left out and which model they name", () => {
+    expect(html).toContain(
+      "NHTSA&#x27;s search for this vehicle also returned 94 complaints whose records name another model (F-150 HYBRID), so they&#x27;re left out.",
+    );
+  });
+
+  it("says the vehicle's own names have no recalls, and points to the ones under similar names", () => {
+    expect(html).toContain("No recalls are filed under this vehicle&#x27;s names. Recalls under similar names are listed below and may apply");
   });
 });
 

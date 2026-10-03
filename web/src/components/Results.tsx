@@ -3,6 +3,7 @@ import { formatDate } from "../lib/dates";
 import { displayName } from "../lib/labels";
 import type { ComplaintMatches, ShownRecall } from "../lib/match";
 import type { Complaint, Vehicle } from "../lib/nhtsa";
+import { sameName } from "../lib/vehicles";
 import { AlertIcon, ChatIcon, ChevronIcon, ExternalIcon, InfoIcon, TargetIcon, WrenchIcon } from "./Icons";
 
 export interface Analysis {
@@ -14,8 +15,11 @@ export interface Analysis {
 interface Props {
   vehicle: Vehicle;
   names: string[]; // every model name that was searched, the chosen one first
-  recalls: ShownRecall[]; // already in display order
+  models: string[]; // the models NHTSA's complaint records name for this vehicle (or the chosen name)
+  recalls: ShownRecall[]; // the vehicle's own, already in display order
+  relatedRecalls: ShownRecall[]; // filed under similar names that may be a different vehicle, in display order
   complaintCount: number;
+  leftOut: Record<string, number>; // complaints NHTSA's search returned whose records name another model
   analysis: Analysis | null;
   matches: ComplaintMatches | null;
 }
@@ -24,11 +28,18 @@ const number = new Intl.NumberFormat("en-US");
 export const plural = (n: number, one: string, many: string) => `${number.format(n)} ${n === 1 ? one : many}`;
 const VIN_LOOKUP = "https://www.nhtsa.gov/recalls";
 
-export function Results({ vehicle, names, recalls, complaintCount, analysis, matches }: Props) {
+export function Results({ vehicle, names, models, recalls, relatedRecalls, complaintCount, leftOut, analysis, matches }: Props) {
   const name = `${vehicle.year} ${vehicle.make} ${vehicle.model}`;
   const doNotDrive = recalls.filter((r) => r.doNotDrive).length;
   const parkOutside = recalls.filter((r) => r.parkOutside).length;
   const warnings = recalls.filter((r) => r.advisory).length;
+  const relatedWarnings = relatedRecalls.filter((r) => r.advisory);
+  const namesOf = (list: ShownRecall[]) => [...new Set(list.map((r) => r.listedAs))];
+  const relatedNames = namesOf(relatedRecalls);
+  const warningNames = namesOf(relatedWarnings);
+  const leftOutCount = Object.values(leftOut).reduce((sum, n) => sum + n, 0);
+  const leftOutModels = Object.keys(leftOut);
+  const renamed = models.some((m) => !sameName(m, vehicle.model));
 
   return (
     <div className="results">
@@ -54,10 +65,24 @@ export function Results({ vehicle, names, recalls, complaintCount, analysis, mat
           <Stat label="Recalls" value={recalls.length} />
           <Stat label="Owner complaints" value={complaintCount} />
         </dl>
-        {names.length > 1 && (
+        {(names.length > 1 || renamed) && (
           <p className="callout">
             <InfoIcon />
-            <span>NHTSA files this vehicle under more than one model name, so all of them were searched: {names.join(", ")}.</span>
+            <span>
+              {renamed && `NHTSA's complaint records name this vehicle ${models.join(", ")}. `}
+              NHTSA uses more than one name for some vehicles, so these were searched: {names.join(", ")}. The counts include only the
+              records that NHTSA's own data ties to this vehicle.
+            </span>
+          </p>
+        )}
+        {relatedWarnings.length > 0 && (
+          <p className="callout danger">
+            <AlertIcon />
+            <span>
+              {relatedWarnings.length === 1 ? "A safety warning is" : `${number.format(relatedWarnings.length)} safety warnings are`} filed
+              under {warningNames.length === 1 ? "a similar name" : "similar names"} ({warningNames.join(", ")}). Check whether{" "}
+              {relatedWarnings.length === 1 ? "it applies" : "they apply"} to your vehicle in the recalls below.
+            </span>
           </p>
         )}
       </div>
@@ -85,19 +110,53 @@ export function Results({ vehicle, names, recalls, complaintCount, analysis, mat
           </>
         ) : (
           <div className="card quiet">
-            <p>
-              No recalls were found for the {name}. NHTSA sometimes files a vehicle under a different model name, so{" "}
-              <ExternalLink href={VIN_LOOKUP}>check your VIN on NHTSA's site</ExternalLink> to be sure.
-            </p>
+            {relatedRecalls.length ? (
+              <p>
+                No recalls are filed under this vehicle's names. Recalls under similar names are listed below and may apply, so{" "}
+                <ExternalLink href={VIN_LOOKUP}>check your VIN on NHTSA's site</ExternalLink> to be sure.
+              </p>
+            ) : (
+              <p>
+                No recalls were found for the {name}. NHTSA sometimes files a vehicle under a different model name, so{" "}
+                <ExternalLink href={VIN_LOOKUP}>check your VIN on NHTSA's site</ExternalLink> to be sure.
+              </p>
+            )}
           </div>
         )}
       </section>
+
+      {relatedRecalls.length > 0 && (
+        <section className="section" aria-labelledby="related-heading">
+          <div className="section-head">
+            <h3 id="related-heading">Recalls under similar names</h3>
+            <span className="count">{number.format(relatedRecalls.length)}</span>
+          </div>
+          <p className="section-note">
+            {relatedRecalls.length === 1 ? "This recall is" : "These recalls are"} filed under {relatedNames.join(", ")},{" "}
+            {relatedNames.length === 1 ? "a similar name that may be a different vehicle" : "similar names that may be different vehicles"}, so{" "}
+            {relatedRecalls.length === 1 ? "it isn't" : "they aren't"} counted above. Check {relatedRecalls.length === 1 ? "its" : "each one's"}{" "}
+            details, and <ExternalLink href={VIN_LOOKUP}>check your VIN on NHTSA's site</ExternalLink>.
+          </p>
+          <ol className="cards">
+            {relatedRecalls.map((recall) => (
+              <RecallCard key={recall.campaign} recall={recall} chosen={vehicle.model} />
+            ))}
+          </ol>
+        </section>
+      )}
 
       <section className="section" aria-labelledby="complaints-heading">
         <div className="section-head">
           <h3 id="complaints-heading">Owner complaints like yours</h3>
           {matches && analysis && matches.shown.length > 0 && <span className="count">{number.format(matches.shown.length)}</span>}
         </div>
+        {leftOutCount > 0 && (
+          <p className="section-note">
+            NHTSA's search for this vehicle also returned {plural(leftOutCount, "complaint", "complaints")} whose{" "}
+            {leftOutCount === 1 ? "record names" : "records name"} {leftOutModels.length === 1 ? "another model" : "other models"}{" "}
+            ({leftOutModels.join(", ")}), so {leftOutCount === 1 ? "it's" : "they're"} left out.
+          </p>
+        )}
         {!matches || !analysis ? (
           <div className="card quiet with-icon">
             <ChatIcon />

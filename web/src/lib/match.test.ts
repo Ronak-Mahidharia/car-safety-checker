@@ -69,7 +69,7 @@ describe("matchComplaints", () => {
     return new Map([...counts].map(([i, n]) => [i, n / length]));
   };
   const complaint = (odiNumber: string, labels: string[], summary: string, filed: string): Complaint => ({
-    odiNumber, filed, components: labels, labels, summary, crash: false, fire: false, injuries: 0, deaths: 0, source: "", listedAs: "TEST",
+    odiNumber, filed, components: labels, labels, summary, crash: false, fire: false, injuries: 0, deaths: 0, source: "", listedAs: "TEST", recordModel: null,
   });
   const list = [
     complaint("1", ["ENGINE"], "engine hesitates and stalls", "2025-01-01"),

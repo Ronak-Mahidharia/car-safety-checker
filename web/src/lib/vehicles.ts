@@ -1,12 +1,28 @@
-// Vehicle names for the picker. NHTSA's recall and complaint records often name the same vehicle
-// differently (checked Oct 2, 2026): the 2026 Lucid Air's recalls are filed under "AIR" and its
-// complaints under "AIR BEV", and NHTSA's vehicle-list API offers only "AIR BEV". A recall is found
-// only by the exact model name it's filed under, so:
-//   1. the picker also offers every name in NHTSA's recall file (public/vehicles/, built by
-//      scripts/build_vehicle_index.py), and
-//   2. a search covers related names: one name is the other plus more words ("AIR" and "AIR BEV").
-// NHTSA's searches ignore capitals, so every name is kept in capitals.
-import { makes as listedMakes, modelYears as listedYears, models as listedModels } from "./nhtsa";
+// Vehicle names, and which of NHTSA's records belong to the vehicle someone picks. NHTSA's API names
+// the same vehicle in more than one way (checked Oct 3, 2026):
+//   - Its complaint search takes the names in its vehicle list ("AIR BEV", "MUSTANG MACH-E",
+//     "F-150 (SUPER CREW) LIGHTNING BEV"), but each complaint record names the model the way recalls
+//     are filed ("AIR", "MUSTANG MACH E", "F-150 LIGHTNING BEV").
+//   - Its recall search takes only those recall names, and the vehicle list leaves some out (it offers
+//     only "AIR BEV" for the 2026 Lucid Air), so the picker also offers every name in NHTSA's recall
+//     file (public/vehicles/, built by scripts/build_vehicle_index.py).
+//   - A complaint search can return another model's records too: the 2023 "F-150 (SUPER CREW)
+//     LIGHTNING BEV" search returns 94 complaints whose records name the F-150 HYBRID.
+// So a search covers related names (spelled the same apart from punctuation, or with more words), and
+// the models named on the complaint records decide which recalls and complaints are the vehicle's own.
+// Recalls under related names that the records don't tie to the vehicle are kept apart, never dropped:
+// "MUSTANG" is related to "MUSTANG MACH-E" but is a different car. src/carsafety/vehicles.py does the
+// same in Python. NHTSA's searches ignore capitals, so every name is kept in capitals.
+import {
+  complaints as complaintsFor,
+  makes as listedMakes,
+  modelYears as listedYears,
+  models as listedModels,
+  recalls as recallsFor,
+  type Complaint,
+  type Recall,
+  type Vehicle,
+} from "./nhtsa";
 
 type Fetcher = (url: string) => Promise<Response>;
 type YearFile = Record<string, string[]>; // make -> model names
@@ -74,12 +90,156 @@ export async function vehicleModels(year: string, make: string, signal?: AbortSi
   return models;
 }
 
-/** True if the names are equal or one is the other plus more words ("AIR" and "AIR BEV"). */
+/** A name's words in capitals, without punctuation: "F-150 (SUPER CREW)" -> ["F150", "SUPER", "CREW"]. */
+export function words(name: string): string[] {
+  return name
+    .toUpperCase()
+    .split(/\s+/)
+    .map((part) => part.replace(/[^A-Z0-9]/g, ""))
+    .filter(Boolean);
+}
+
+/** Spelled the same apart from spaces and punctuation: "MUSTANG MACH-E" and "MUSTANG MACH E". */
+export function sameName(a: string, b: string): boolean {
+  const key = words(a).join("");
+  return key !== "" && key === words(b).join("");
+}
+
+/**
+ * True if `whole` is `part` with more words, in order and starting with the same word. "AIR" is within
+ * "AIR BEV", and "F-150 LIGHTNING BEV" is within "F-150 (SUPER CREW) LIGHTNING BEV".
+ */
+export function within(part: string, whole: string): boolean {
+  const p = words(part);
+  const w = words(whole);
+  if (!p.length || p.length >= w.length || p[0] !== w[0]) return false;
+  let next = 0; // each word found after the one before
+  for (const word of w) if (next < p.length && word === p[next]) next++;
+  return next === p.length;
+}
+
+/** Names that may be the same vehicle: spelled the same, or one is the other with more words. */
 export function related(a: string, b: string): boolean {
-  return a === b || a.startsWith(`${b} `) || b.startsWith(`${a} `);
+  return sameName(a, b) || within(a, b) || within(b, a);
 }
 
 /** The chosen name first, then every related name from the list. */
 export function relatedNames(name: string, names: readonly string[]): string[] {
   return [name, ...names.filter((other) => other !== name && related(name, other))];
+}
+
+/**
+ * The recall-file names that are this name or within it, keeping only the most specific. For
+ * "F-150 (SUPER CREW) LIGHTNING BEV" that's "F-150 LIGHTNING BEV", not "F-150".
+ */
+export function closestRecallNames(name: string, recallFileNames: readonly string[]): string[] {
+  const fitting = recallFileNames.filter((r) => sameName(r, name) || within(r, name));
+  return fitting.filter((r) => !fitting.some((other) => within(r, other)));
+}
+
+/**
+ * Which model the chosen vehicle is, from the models its complaint records name. A search can return
+ * another model's records too, so the first of these that finds any is kept:
+ *   1. models spelled like the chosen name or within it ("AIR" for "AIR BEV")
+ *   2. models the chosen name is within
+ *   3. every model named: the 2023 "F-150 (SUPER CREW) HEV" records name the F-150 HYBRID
+ * With no records, it's the chosen name.
+ */
+export function identify(chosen: string, recordModels: readonly (string | null)[]): string[] {
+  const named: string[] = [];
+  for (const m of recordModels) if (m && !named.some((n) => sameName(m, n))) named.push(m); // each model once, spellings aside
+  for (const close of [named.filter((m) => sameName(m, chosen) || within(m, chosen)), named.filter((m) => within(chosen, m))]) {
+    if (close.length) return close;
+  }
+  return named.length ? named : [chosen];
+}
+
+/** What a search found, split by whether NHTSA's records tie it to the chosen vehicle. */
+export interface Found {
+  names: string[]; // every name searched, the chosen one first
+  models: string[]; // the models the vehicle's complaint records name (or the chosen name)
+  ownNames: string[]; // the names whose recalls are the vehicle's own
+  recalls: Recall[]; // the vehicle's own
+  relatedRecalls: Recall[]; // filed under related names that may be a different vehicle
+  complaints: Complaint[]; // the vehicle's own
+  leftOut: Record<string, number>; // complaints the chosen name's search returned whose records name another model
+}
+
+type ApiFetcher = Parameters<typeof recallsFor>[2];
+
+/**
+ * Recalls and complaints for a vehicle, under its name and every related name in `listed`. The
+ * complaints found under the chosen name (or one spelled the same) say which model it is. Recalls are
+ * its own when filed under the chosen name, a name spelled the same, those models, or the closest
+ * recall-file names within them; recalls under other related names are kept apart. Complaints are its
+ * own when their record names one of those models. Complaints the chosen name's own search returns also
+ * count when their record names a version of one with more words (the 2015 "FUSION HEV" search returns
+ * FUSION HYBRID complaints) or no model at all; the rest are left out. A record found twice is kept once.
+ */
+export async function search(
+  vehicle: Vehicle,
+  listed: readonly string[],
+  recallFileNames: readonly string[],
+  signal?: AbortSignal,
+  fetcher?: ApiFetcher,
+): Promise<Found> {
+  const under = (model: string): Vehicle => ({ ...vehicle, model });
+  const names = relatedNames(vehicle.model, listed);
+  const fetched = await Promise.all(
+    names.map((name) => Promise.all([recallsFor(under(name), signal, fetcher), complaintsFor(under(name), signal, fetcher)])),
+  );
+  const foundRecalls = new Map(names.map((name, i) => [name, fetched[i][0]]));
+  const foundComplaints = new Map(names.map((name, i) => [name, fetched[i][1]]));
+
+  const chosen = names.filter((name) => sameName(name, vehicle.model));
+  const named = chosen.flatMap((name) => (foundComplaints.get(name) ?? []).flatMap((c) => (c.recordModel ? [c.recordModel] : [])));
+  const models = identify(vehicle.model, named);
+  // Every spelling the records use is searched: NHTSA files 2020 Mercedes-Benz recall 20V228000 under "E450",
+  // while complaint records name both "E450" and "E 450".
+  const matching = unique(named).filter((m) => models.some((o) => sameName(m, o)));
+  const spellings = matching.length ? matching : models;
+  const ownNames = unique([...chosen, ...spellings.flatMap((m) => [m, ...closestRecallNames(m, recallFileNames)])]);
+  const extra = ownNames.filter((name) => !foundRecalls.has(name)); // the records can point to a name not yet searched
+  const more = await Promise.all(extra.map((name) => recallsFor(under(name), signal, fetcher)));
+  extra.forEach((name, i) => foundRecalls.set(name, more[i]));
+
+  const own = new Map<string, Recall>();
+  for (const name of ownNames) for (const r of foundRecalls.get(name) ?? []) if (!own.has(r.campaign)) own.set(r.campaign, r);
+  const others = new Map<string, Recall>();
+  for (const name of names) {
+    for (const r of foundRecalls.get(name) ?? []) if (!own.has(r.campaign) && !others.has(r.campaign)) others.set(r.campaign, r);
+  }
+
+  const mine = new Map<string, Complaint>();
+  const leftOut: Record<string, number> = {};
+  const seen = new Set<string>();
+  // The chosen name's own search first, so its complaints are judged as such.
+  for (const name of [...chosen, ...names.filter((n) => !chosen.includes(n))]) {
+    const searchedFor = chosen.includes(name); // NHTSA's own search for the chosen name returned it
+    for (const c of foundComplaints.get(name) ?? []) {
+      if (seen.has(c.odiNumber)) continue;
+      seen.add(c.odiNumber);
+      const model = c.recordModel;
+      const ownOne =
+        model === null
+          ? searchedFor
+          : models.some((m) => sameName(model, m)) || (searchedFor && models.some((m) => within(m, model)));
+      if (ownOne) mine.set(c.odiNumber, c);
+      else if (model !== null && searchedFor) leftOut[model] = (leftOut[model] ?? 0) + 1;
+    }
+  }
+
+  return {
+    names: unique([...names, ...ownNames]),
+    models,
+    ownNames,
+    recalls: [...own.values()],
+    relatedRecalls: [...others.values()],
+    complaints: [...mine.values()],
+    leftOut,
+  };
+}
+
+function unique(items: readonly string[]): string[] {
+  return [...new Set(items)];
 }

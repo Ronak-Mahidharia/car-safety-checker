@@ -185,6 +185,10 @@ class Complaint:
     deaths: int
     source: str
     listed_as: str  # the model name it was found under
+    # The model the record itself names. NHTSA's complaint search takes its vehicle list's names
+    # ("AIR BEV"), but each record names the model the way recalls are filed ("AIR"), and a search can
+    # return records for another model too (see vehicles.py).
+    record_model: str | None = None
 
 
 def to_recall(row: dict, listed_as: str) -> Recall:
@@ -205,7 +209,19 @@ def to_recall(row: dict, listed_as: str) -> Recall:
     )
 
 
-def to_complaint(row: dict, listed_as: str) -> Complaint:
+def record_model(row: dict, vehicle: Vehicle) -> str | None:
+    """The model a complaint record names for the vehicle searched (same model year and make), if any."""
+    for product in row.get("products") or []:
+        if not isinstance(product, dict) or product.get("type") != "Vehicle":
+            continue
+        if _text(product.get("productYear")) == vehicle.year and _text(product.get("productMake")).upper() == vehicle.make:
+            model = _text(product.get("productModel")).upper()
+            if model and model != "TBD":
+                return model
+    return None
+
+
+def to_complaint(row: dict, vehicle: Vehicle) -> Complaint:
     """Only these fields are kept. The partial VIN and everything else in the record are dropped."""
     odi_number = _text(row.get("odiNumber"))
     components = tuple(split_components(_text(row.get("components"))))
@@ -221,7 +237,8 @@ def to_complaint(row: dict, listed_as: str) -> Complaint:
         injuries=_count(row.get("numberOfInjuries")),
         deaths=_count(row.get("numberOfDeaths")),
         source=f"{API}/complaints/odinumber?{query(odinumber=odi_number)}",
-        listed_as=listed_as,
+        listed_as=vehicle.model,
+        record_model=record_model(row, vehicle),
     )
 
 
@@ -237,23 +254,7 @@ def recalls(vehicle: Vehicle, fetch: Fetch = http_get) -> list[Recall]:
 
 def complaints(vehicle: Vehicle, fetch: Fetch = http_get) -> list[Complaint]:
     rows = results(f"/complaints/complaintsByVehicle?{vehicle.query()}", fetch)
-    return [c for c in (to_complaint(row, vehicle.model) for row in rows) if c.odi_number]
-
-
-def records(vehicle: Vehicle, names: list[str], fetch: Fetch = http_get) -> tuple[list[Recall], list[Complaint]]:
-    """Recalls and complaints under each of the vehicle's model names, in one list each.
-
-    A record found under several names is kept once, under the first name in the list.
-    """
-    found_recalls: dict[str, Recall] = {}
-    found_complaints: dict[str, Complaint] = {}
-    for name in names:
-        each = Vehicle(vehicle.year, vehicle.make, name)
-        for recall in recalls(each, fetch):
-            found_recalls.setdefault(recall.campaign, recall)
-        for complaint in complaints(each, fetch):
-            found_complaints.setdefault(complaint.odi_number, complaint)
-    return list(found_recalls.values()), list(found_complaints.values())
+    return [c for c in (to_complaint(row, vehicle) for row in rows) if c.odi_number]
 
 
 # ---------- NHTSA's vehicle lists ----------
