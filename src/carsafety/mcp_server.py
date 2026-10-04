@@ -15,6 +15,7 @@ Only the vehicle (model year, make, and model) goes to NHTSA's API. Descriptions
 from __future__ import annotations
 
 import difflib
+import re
 from functools import lru_cache
 from pathlib import Path
 from typing import Annotated, NotRequired, TypedDict
@@ -43,6 +44,14 @@ COMPLAINT_NOTE = ("Owner complaints are reports from the public that NHTSA hasn'
 RELATED_NOTE = ("related_recalls are filed under a similar model name that may be a different vehicle (for example, "
                 "the gasoline MUSTANG for a MUSTANG MACH-E). Don't present them as this vehicle's recalls. Mention any "
                 "Do Not Drive or Park Outside warnings among them, and suggest checking the VIN.")
+# Anyone can file a complaint with NHTSA, so its text could try to steer an AI assistant. A sentence with the most
+# common wording ("ignore all previous instructions") is replaced before the text reaches the assistant. None of
+# the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has one (checked Oct 3, 2026), so
+# real complaints keep every word. Other wordings get through, so the instructions still say to treat the text as data.
+STEERING = re.compile(r"\b(?:ignore|disregard|forget)\s+(?:all\s+|any\s+|the\s+|your\s+|of\s+)*(?:previous|prior|above|earlier|preceding|other)\s+"
+                      r"(?:instructions?|prompts?|messages?|rules|directions)\b", re.I)
+SENTENCE = re.compile(r"[^.!?\n]+[.!?]*|[.!?\n]+")  # every character falls in one piece, so the pieces rebuild the text
+REMOVED = "[removed: text addressed to an AI assistant]"
 MODEL_NOTE = ("Guesses from a keyword model trained on 200,000 past complaints, with a confidence from 0 to 1. On 1,000 "
               "complaints received in 2025 and 2026, its top guess was one of the components NHTSA recorded 83% of the time.")
 
@@ -176,7 +185,7 @@ def find(year: int, make: str, model_name: str) -> tuple[nhtsa.Vehicle, Found]:
         found = search(vehicle, listed, file_names, fetch)
     except nhtsa.NhtsaError as error:
         raise ToolError(str(error)) from error
-    if not (found.recalls or found.related_recalls or found.complaints or found.left_out):
+    if not (found.recalls or found.complaints):  # nothing of its own: fine for a listed name, a typo otherwise
         check_name(vehicle, listed)
     return vehicle, found
 
@@ -184,8 +193,9 @@ def find(year: int, make: str, model_name: str) -> tuple[nhtsa.Vehicle, Found]:
 def check_name(vehicle: nhtsa.Vehicle, listed: list[str]) -> None:
     """A name NHTSA doesn't use finds nothing, which must not read as "no recalls".
 
-    Called when a search found no records of either kind. It's an error only if NHTSA's lists don't
-    have the name (spaces and punctuation aside).
+    Called when a search found no recalls or complaints of the vehicle's own. It's an error only if NHTSA's
+    lists don't have the name (spaces and punctuation aside), even when a similar name has records: a typo
+    such as "MUSTANG MAH-E" gets "Did you mean: MUSTANG MACH-E", not the gasoline MUSTANG's recalls.
     """
     if any(same_name(vehicle.model, name) for name in listed):
         return
@@ -196,6 +206,13 @@ def check_name(vehicle: nhtsa.Vehicle, listed: list[str]) -> None:
     hint = f" Did you mean: {', '.join(close)}?" if close else ""
     raise ToolError(f"NHTSA has no records under the model name {vehicle.model} for the {vehicle.year} {vehicle.make}, "
                     f"and doesn't list that name.{hint} Call vehicle_models for NHTSA's names.")
+
+
+def without_steering(text: str) -> str:
+    """The complaint text, with any sentence that tries to steer an AI assistant replaced (see STEERING)."""
+    if not STEERING.search(text):
+        return text
+    return "".join(f" {REMOVED}" if STEERING.search(piece) else piece for piece in SENTENCE.findall(text)).strip()
 
 
 def recall_item(s: ShownRecall) -> RecallItem:
@@ -308,7 +325,7 @@ def similar_complaints(year: Year, make: Make, model: Model, description: Descri
         "fire": c.fire,
         "injuries": c.injuries,
         "deaths": c.deaths,
-        "owner_report": c.summary,
+        "owner_report": without_steering(c.summary),
         "filed_under": c.listed_as,
         "similarity": round(score, 4),
         "nhtsa_record": c.source,

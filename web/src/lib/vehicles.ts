@@ -134,13 +134,15 @@ export function relatedNames(name: string, names: readonly string[]): string[] {
  *   2. the one name that is this name with more words ("F-150 LIGHTNING BEV" for "F-150 LIGHTNING"). If
  *      several are, none: the name can't tell them apart.
  *   3. the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for
- *      "F-150 (SUPER CREW) LIGHTNING BEV"
+ *      "F-150 (SUPER CREW) LIGHTNING BEV". Only with shorter = true: for a name nobody lists and no record
+ *      names, a shorter name is a guess ("MUSTANG MAH-E", a typo, isn't the gasoline "MUSTANG").
  */
-export function closestRecallNames(name: string, recallFileNames: readonly string[]): string[] {
+export function closestRecallNames(name: string, recallFileNames: readonly string[], shorter = true): string[] {
   const same = recallFileNames.filter((r) => sameName(r, name));
   if (same.length) return same;
   const longer = recallFileNames.filter((r) => within(name, r));
   if (longer.length) return longer.length === 1 ? longer : [];
+  if (!shorter) return [];
   const fitting = recallFileNames.filter((r) => within(r, name));
   return fitting.filter((r) => !fitting.some((other) => within(r, other)));
 }
@@ -215,7 +217,10 @@ export async function search(
   // while complaint records name both "E450" and "E 450".
   const matching = unique(named).filter((m) => models.some((o) => sameName(m, o)));
   const spellings = matching.length ? matching : models;
-  const ownNames = unique([...chosen, ...spellings.flatMap((m) => [m, ...closestRecallNames(m, recallFileNames)])]);
+  // A shorter recall name counts only for a name NHTSA lists, or one its records name: for a typo no list
+  // has ("MUSTANG MAH-E"), "MUSTANG" would be a guess, and the gasoline car's recalls the wrong answer.
+  const trusted = named.length > 0 || listed.some((n) => sameName(vehicle.model, n));
+  const ownNames = unique([...chosen, ...spellings.flatMap((m) => [m, ...closestRecallNames(m, recallFileNames, trusted)])]);
   const extra = ownNames.filter((name) => !foundRecalls.has(name)); // the records can point to a name not yet searched
   const more = await Promise.all(extra.map((name) => recallsFor(under(name), signal, fetcher)));
   extra.forEach((name, i) => foundRecalls.set(name, more[i]));
