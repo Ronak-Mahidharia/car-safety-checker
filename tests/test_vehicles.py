@@ -237,6 +237,18 @@ def test_recalls_under_a_shorter_version_of_the_name_are_listed_apart():
     assert [(r.campaign, r.listed_as) for r in found.related_recalls] == [("23V900003", "F-150 LIGHTNING")]
 
 
+def test_a_typo_no_list_has_isnt_given_a_shorter_names_recalls():
+    # qwen3 typed "MUSTANG MAH-E" in the tool-use evaluation (Oct 3, 2026). It's in no list and has no records,
+    # so "MUSTANG", the gasoline car, would be a guess: its recalls stay apart, and none is the vehicle's own.
+    fetch, _ = nhtsa_server({path("recalls", "2022", "FORD", "MUSTANG"): [recall("22V900002")]})
+    found = search(Vehicle("2022", "FORD", "MUSTANG MAH-E"), MUSTANGS, ["MUSTANG", "MUSTANG MACH E"], fetch)
+    assert found.recalls == [] and [r.campaign for r in found.related_recalls] == ["22V900002"]
+    # A name NHTSA lists keeps the shorter name: the Lucid's AIR BEV, with no complaints, still gets AIR's recalls.
+    fetch, _ = nhtsa_server({path("recalls", "2026", "LUCID", "AIR"): [recall("26V540000")]})
+    found = search(Vehicle("2026", "LUCID", "AIR BEV"), ["AIR", "AIR BEV"], ["AIR"], fetch)
+    assert [r.campaign for r in found.recalls] == ["26V540000"]
+
+
 def test_a_recall_file_name_finds_complaints_filed_under_the_lists_name():
     # The picker also offers the recall file's names. For the 2026 Lucid AIR, complaints are found under the
     # vehicle list's AIR BEV and name AIR (checked Oct 3, 2026).

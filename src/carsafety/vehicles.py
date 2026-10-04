@@ -98,13 +98,14 @@ def related_names(name: str, names: list[str]) -> list[str]:
     return [name, *(other for other in names if other != name and related(name, other))]
 
 
-def closest_recall_names(name: str, recall_file_names: Iterable[str]) -> list[str]:
+def closest_recall_names(name: str, recall_file_names: Iterable[str], shorter: bool = True) -> list[str]:
     """The recall-file names that are this name's, judged by the name alone. The first of these that finds any:
       1. names spelled the same ("MUSTANG MACH E" for "MUSTANG MACH-E")
       2. the one name that is this name with more words ("F-150 LIGHTNING BEV" for "F-150 LIGHTNING"). If
          several are, none: the name can't tell them apart.
       3. the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for
-         "F-150 (SUPER CREW) LIGHTNING BEV"
+         "F-150 (SUPER CREW) LIGHTNING BEV". Only with shorter=True: for a name nobody lists and no record
+         names, a shorter name is a guess ("MUSTANG MAH-E", a typo, isn't the gasoline "MUSTANG").
     """
     names = list(recall_file_names)
     same = [r for r in names if same_name(r, name)]
@@ -113,6 +114,8 @@ def closest_recall_names(name: str, recall_file_names: Iterable[str]) -> list[st
     longer = [r for r in names if within(name, r)]
     if longer:
         return longer if len(longer) == 1 else []
+    if not shorter:
+        return []
     fitting = [r for r in names if within(r, name)]
     return [r for r in fitting if not any(within(r, other) for other in fitting)]
 
@@ -180,7 +183,10 @@ def search(vehicle: Vehicle, listed: list[str], recall_file_names: Iterable[str]
     # while complaint records name both "E450" and "E 450".
     spellings = [m for m in dict.fromkeys(named) if any(same_name(m, o) for o in own_models)] or own_models
     file_names = list(recall_file_names)
-    own_names = list(dict.fromkeys([*chosen, *(r for m in spellings for r in (m, *closest_recall_names(m, file_names)))]))
+    # A shorter recall name counts only for a name NHTSA lists, or one its records name: for a typo no list
+    # has ("MUSTANG MAH-E"), "MUSTANG" would be a guess, and the gasoline car's recalls the wrong answer.
+    trusted = bool(named) or any(same_name(vehicle.model, n) for n in listed)
+    own_names = list(dict.fromkeys([*chosen, *(r for m in spellings for r in (m, *closest_recall_names(m, file_names, trusted)))]))
     for name in own_names:  # the records can point to a name the related names didn't include
         if name not in found_recalls:
             found_recalls[name] = recalls(under(name), fetch)

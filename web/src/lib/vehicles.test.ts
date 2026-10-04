@@ -305,6 +305,21 @@ describe("search", () => {
     expect(found.relatedRecalls.map((r) => [r.campaign, r.listedAs])).toEqual([["23V900003", "F-150 LIGHTNING"]]);
   });
 
+  it("doesn't give a typo no list has a shorter name's recalls", async () => {
+    // qwen3 typed "MUSTANG MAH-E" in the tool-use evaluation (Oct 3, 2026). It's in no list and has no records,
+    // so "MUSTANG", the gasoline car, would be a guess: its recalls stay apart, and none is the vehicle's own.
+    const ford = (model: string) => at("2022", "FORD", model);
+    let { fetcher } = server({ [path("recalls", ford("MUSTANG"))]: [recall("22V900002")] });
+    const typo = await search(ford("MUSTANG MAH-E"), mustangs, ["MUSTANG", "MUSTANG MACH E"], undefined, fetcher);
+    expect(typo.recalls).toEqual([]);
+    expect(typo.relatedRecalls.map((r) => r.campaign)).toEqual(["22V900002"]);
+    // A name NHTSA lists keeps the shorter name: the Lucid's AIR BEV, with no complaints, still gets AIR's recalls.
+    const lucid = (model: string) => at("2026", "LUCID", model);
+    ({ fetcher } = server({ [path("recalls", lucid("AIR"))]: [recall("26V540000")] }));
+    const air = await search(lucid("AIR BEV"), ["AIR", "AIR BEV"], ["AIR"], undefined, fetcher);
+    expect(air.recalls.map((r) => r.campaign)).toEqual(["26V540000"]);
+  });
+
   it("finds the complaints filed under the list's name for a recall-file name", async () => {
     // For the 2026 Lucid AIR, complaints are found under the vehicle list's AIR BEV and name AIR (checked Oct 3, 2026).
     const lucid = (model: string) => at("2026", "LUCID", model);

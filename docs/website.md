@@ -43,7 +43,7 @@ NHTSA's API names the same vehicle in more than one way (checked Oct 3, 2026):
 3. **The vehicle's recalls** are those filed under the chosen name, a name spelled the same, and the models its records name (in every spelling they use). The closest recall-file names count too, judged in this order:
    - a name spelled the same
    - the one name that is the vehicle's name with more words: "F-150 LIGHTNING BEV" for "F-150 LIGHTNING", a name in no list and with no complaints. If several names fit, none is picked.
-   - the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for the Lightning's list name
+   - the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for the Lightning's list name. This needs a name NHTSA lists or one its records name (Oct 3). For a typo such as "MUSTANG MAH-E", which is in no list and has no records, the shorter "MUSTANG" would be a guess: the gasoline Mustang's recalls stay under similar names. The picker clears a model from a link that NHTSA doesn't list, so this matters most for [the MCP server](mcp.md), where an assistant types the name.
 4. **Recalls under other related names are listed apart,** under "Recalls under similar names", and never dropped, because a name can't tell whether a recall applies: one filed only under "ESCAPE" may also cover an "ESCAPE PHEV". So are recalls under shorter versions of the vehicle's recall names (two words or more), which NHTSA's API sometimes uses instead. A safety warning among them is pointed out at the top of the results.
 5. **Complaints count** when their record names the vehicle's model, or a version of it with more words that the chosen name's own search returned (the 2015 "FUSION HEV" search returns FUSION HYBRID complaints). The rest are left out, and the page says how many.
 
@@ -94,7 +94,7 @@ The page shows these as guesses with a confidence, never as findings.
 - **Light:** no outside fonts, icon libraries, or images. The icons are drawn for the site in SVG.
 
 ## How it's checked
-**72 tests (Vitest), run in CI:**
+**73 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -106,7 +106,7 @@ The page shows these as guesses with a confidence, never as findings.
   - the partial VIN is dropped
   - each complaint record's model is read, and records found under several names are sorted into the vehicle's own and those under similar names
 - Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning.
-- Vehicle names (Oct 3): the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Five deliberate bugs planted in a copy of the name code each made tests fail. On NHTSA's saved live answers for 13 vehicles, the TypeScript and Python searches agreed on all 117 compared fields ([details](mcp.md#how-its-checked)).
+- Vehicle names (Oct 3): the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Six deliberate bugs planted in a copy of the name code each made tests fail, the sixth a typo given a shorter name's recalls. On NHTSA's saved live answers for 14 vehicles, one of them a typo, the TypeScript and Python searches agreed on all 126 compared fields ([details](mcp.md#how-its-checked)).
 
 **On the built site in headless Chrome:**
 - Click-through checks on a 1,280 px screen and a 390 px phone all pass:
