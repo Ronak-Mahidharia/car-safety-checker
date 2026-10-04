@@ -40,16 +40,19 @@ NHTSA's API names the same vehicle in more than one way (checked Oct 3, 2026):
 **How a search works.**
 1. **Related names are searched too:** names spelled the same apart from spaces and punctuation ("MUSTANG MACH-E" and "MUSTANG MACH E", "CRV" and "CR-V"), and names that are the chosen one with more words, in order and starting with the same word ("F-150" and "F-150 (SUPER CREW) GAS"). "MODEL 3" and "MODEL Y" stay separate.
 2. **NHTSA's own records say which vehicle it is.** The complaints found under the chosen name name its model: "AIR" for "AIR BEV". Models spelled like the chosen name or within it count first, because a search can return another model's records. If none is, models the chosen name is within count. If there's still none, the records are trusted: the 2023 "F-150 (SUPER CREW) HEV" records name the F-150 HYBRID.
-3. **The vehicle's recalls** are those filed under the chosen name, a name spelled the same, the models its records name (in every spelling they use), and the most specific recall-file names within those models. That's "F-150 LIGHTNING BEV", not "F-150", for the Lightning.
-4. **Recalls under other related names are listed apart,** under "Recalls under similar names", and never dropped, because a name can't tell whether a recall applies: one filed only under "ESCAPE" may also cover an "ESCAPE PHEV". A safety warning among them is pointed out at the top of the results.
+3. **The vehicle's recalls** are those filed under the chosen name, a name spelled the same, and the models its records name (in every spelling they use). The closest recall-file names count too, judged in this order:
+   - a name spelled the same
+   - the one name that is the vehicle's name with more words: "F-150 LIGHTNING BEV" for "F-150 LIGHTNING", a name in no list and with no complaints. If several names fit, none is picked.
+   - the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for the Lightning's list name
+4. **Recalls under other related names are listed apart,** under "Recalls under similar names", and never dropped, because a name can't tell whether a recall applies: one filed only under "ESCAPE" may also cover an "ESCAPE PHEV". So are recalls under shorter versions of the vehicle's recall names (two words or more), which NHTSA's API sometimes uses instead. A safety warning among them is pointed out at the top of the results.
 5. **Complaints count** when their record names the vehicle's model, or a version of it with more words that the chosen name's own search returned (the 2015 "FUSION HEV" search returns FUSION HYBRID complaints). The rest are left out, and the page says how many.
 
 The page says which names were searched, and which model NHTSA's records name when it differs from the chosen one. Each record filed under another name is marked.
 
-**How often the old rule went wrong.** The first version linked two names only when one was the other plus more words. [`check_vehicle_names.py`](../scripts/check_vehicle_names.py) compared it with the new search on NHTSA's live API (Oct 3, 2026). It picked 30 model years and makes in proportion to their complaints, then up to 8 names from NHTSA's vehicle list for each: 216 names with complaints, covering 49,245 complaints. The old rule:
-- **counted recalls filed only under another model's name** as the vehicle's own for 17 names (7.9%, or 6.6% of the complaints). The 2022 Jeep Grand Cherokee got 11 recalls filed only under GRAND CHEROKEE 4XE, the plug-in hybrid.
-- **missed recalls filed under the vehicle's own names** for 24 names (11.1%, or 12.5% of the complaints). The 2020 Mercedes-Benz E-Class's records name models such as E 450, and the 15 recalls filed under them were missed. The BMW 3 Series missed 11 filed under 330I. One of the 24 is the 2016 IMPALA ECO EASSIST, whose records name the MALIBU (see Limits).
-- **did one or the other** for 41 names (19.0%, or 19.1% of the complaints).
+**How often the old rule went wrong.** The first version linked two names only when one was the other plus more words. [`check_vehicle_names.py`](../scripts/check_vehicle_names.py) compared it with the new search on NHTSA's live API (Oct 3, 2026). It picked 30 model years and makes in proportion to their complaints, then up to 8 names from NHTSA's vehicle list for each: 216 names with complaints, covering 49,257 complaints. The old rule:
+- **counted recalls filed only under another model's name** as the vehicle's own for 16 names (7.4%, or 6.6% of the complaints). The 2022 Jeep Grand Cherokee got 11 recalls filed only under GRAND CHEROKEE 4XE, the plug-in hybrid.
+- **missed recalls filed under the vehicle's own names** for 25 names (11.6%, or 13.1% of the complaints). The 2020 Mercedes-Benz E-Class's records name models such as E 450, and the 15 recalls filed under them were missed. The BMW 3 Series missed 11 filed under 330I. Ford's F-250 and F-350 records name F-250 and F-350, while their recalls are filed under F-250 SD and F-350 SD; the 2019 F-250 Crew Cab missed 16. One of the 24 is the 2016 IMPALA ECO EASSIST, whose records name the MALIBU (see Limits).
+- **did one or the other** for 41 names (19.0%, or 19.7% of the complaints).
 
 NHTSA's search for 8 of the names (3.7%) also returned complaints about another model, 343 in all, which the new search leaves out. For example, the 2022 GRAND CHEROKEE L search returned 148 GRAND CHEROKEE 4XE complaints. Every recall that NHTSA's recall file lists under the sampled vehicles' own names was found. NHTSA's downloadable files name complaints the way recalls are filed, so this mismatch shows only in the live API.
 
@@ -91,7 +94,7 @@ The page shows these as guesses with a confidence, never as findings.
 - **Light:** no outside fonts, icon libraries, or images. The icons are drawn for the site in SVG.
 
 ## How it's checked
-**70 tests (Vitest), run in CI:**
+**72 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -103,7 +106,7 @@ The page shows these as guesses with a confidence, never as findings.
   - the partial VIN is dropped
   - each complaint record's model is read, and records found under several names are sorted into the vehicle's own and those under similar names
 - Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning.
-- Vehicle names (Oct 3): the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Three deliberate bugs planted in a copy of the name code each made tests fail. On NHTSA's saved live answers for 12 vehicles, the TypeScript and Python searches agreed on all 108 compared fields ([details](mcp.md#how-its-checked)).
+- Vehicle names (Oct 3): the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Five deliberate bugs planted in a copy of the name code each made tests fail. On NHTSA's saved live answers for 13 vehicles, the TypeScript and Python searches agreed on all 117 compared fields ([details](mcp.md#how-its-checked)).
 
 **On the built site in headless Chrome:**
 - Click-through checks on a 1,280 px screen and a 390 px phone all pass:
@@ -114,7 +117,7 @@ The page shows these as guesses with a confidence, never as findings.
   - a phone scrolls to the results
   - the address keeps only the vehicle
 - The 2019 Honda CR-V, the 2026 Lucid Air BEV, and the 2025 Isuzu NPR HD all load, with advisories first.
-- The 2022 Mustang Mach-E and Mustang, and the 2023 F-150 (SUPER CREW) LIGHTNING BEV, load with their own recalls counted and those under similar names listed apart (Oct 3). The Lightning's list leaves out 94 F-150 HYBRID complaints and says so.
+- The 2022 Mustang Mach-E and Mustang, and the 2023 F-150 (SUPER CREW) LIGHTNING BEV, load with their own recalls counted and those under similar names listed apart (Oct 3). The Lightning's list leaves out 94 F-150 HYBRID complaints and says so, and lists the two recalls filed only under "F-150 LIGHTNING" under similar names.
 - None of the 315 partial VINs in the CR-V's 1,101 complaint records appears on the page.
 - There are no JavaScript errors and no policy violations. The only console messages are the browser noting NHTSA's expected 400 replies for names with no records.
 - Nothing is wider than the screen at 390 px, in light and dark mode.
@@ -124,7 +127,7 @@ The page shows these as guesses with a confidence, never as findings.
 - It shows what NHTSA has on file for a model and year, not whether a recall covers your car. Only a VIN lookup can tell that.
 - The component guess can be wrong (see Accuracy). Recalls are never hidden because of it.
 - The recall-file names are a snapshot. New model names appear in the picker once the script is run again, and until then only if NHTSA's vehicle-list API has them.
-- NHTSA's API files a few recalls under names that are in neither its vehicle list nor its recall file. Two 2023 F-150 Lightning recalls, 23V168000 and 23V688000, are found only under "F-150 LIGHTNING" (checked Oct 3, 2026), so the page can't show them. NHTSA's VIN lookup can.
+- NHTSA's API files a few recalls under names that are in neither its vehicle list nor its recall file. Two 2023 F-150 Lightning recalls, 23V168000 and 23V688000, are found only under "F-150 LIGHTNING" (checked Oct 3, 2026). The page finds them by searching shorter versions of the vehicle's recall names, but lists them under similar names, because the shorter name alone can't show they apply. A name like that which isn't a shorter version of one the page knows can't be found; NHTSA's VIN lookup can.
 - When NHTSA's records for a name point to a different vehicle, the page follows them and says so. NHTSA's search for the 2016 "IMPALA ECO EASSIST" returns only complaints whose records name the MALIBU (checked Oct 3, 2026).
 - Whether a recall filed only under a similar name covers a vehicle can't be told from the name, so those recalls are listed apart, not counted or hidden.
 

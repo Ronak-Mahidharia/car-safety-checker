@@ -26,7 +26,8 @@ from carsafety.complaints import FIELDS as COMPLAINT_FIELDS
 from carsafety.labels import normalize
 from carsafety.privacy import scrub
 from carsafety.recalls import FIELDS as RECALL_FIELDS
-from carsafety.vehicles import INDEX, closest_recall_names, identify, recall_names, related, same_name, within, words
+from carsafety.vehicles import (INDEX, closest_recall_names, identify, recall_names, related, same_name, shorter_names,
+                                within, words)
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW, OUT = ROOT / "data" / "raw", ROOT / "web" / "src" / "lib" / "fixtures"
@@ -104,7 +105,8 @@ def name_cases() -> dict[str, list]:
         file_names = list(recall_names(year).get(make, ()))
         closest += [[name, file_names, closest_recall_names(name, file_names)] for name in names]
     return {"words": words_cases, "pairs": pairs, "closest": closest,
-            "identify": [[chosen, models, identify(chosen, models)] for chosen, models in IDENTIFY_CASES]}
+            "identify": [[chosen, models, identify(chosen, models)] for chosen, models in IDENTIFY_CASES],
+            "shorter": [[name, shorter_names(name)] for name, _ in words_cases]}
 
 
 def components(path: Path, fields: list[str], name: str) -> set[str]:

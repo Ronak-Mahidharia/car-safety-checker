@@ -13,6 +13,7 @@ import {
   relatedNames,
   sameName,
   search,
+  shorterNames,
   vehicleMakes,
   vehicleModels,
   within,
@@ -26,6 +27,7 @@ const fixture = JSON.parse(readFileSync(new URL("./fixtures/names.json", import.
   pairs: [string, string, boolean, boolean, boolean][];
   closest: [string, string[], string[]][];
   identify: [string, (string | null)[], string[]][];
+  shorter: [string, string[]][];
 };
 
 describe("related", () => {
@@ -70,6 +72,12 @@ describe("the name rules, the same as src/carsafety/vehicles.py", () => {
     expect(closestRecallNames("F-150 (SUPER CREW) LIGHTNING BEV", names)).toEqual(["F-150 LIGHTNING BEV"]);
     expect(closestRecallNames("F-150 (SUPER CREW) HEV", names)).toEqual(["F-150"]);
     expect(closestRecallNames("MUSTANG MACH-E", names)).toEqual(["MUSTANG MACH E"]);
+    // A name in no list: the one recall-file name that is it with more words beats a shorter one.
+    expect(closestRecallNames("F-150 LIGHTNING", names)).toEqual(["F-150 LIGHTNING BEV"]);
+    expect(closestRecallNames("GRAND CHEROKEE", ["GRAND CHEROKEE L", "GRAND CHEROKEE 4XE"])).toEqual([]); // two: no guess
+    expect(shorterNames("F-150 LIGHTNING BEV")).toEqual(["F-150 LIGHTNING"]);
+    expect(shorterNames("SONATA PLUG-IN HYBRID TOURING")).toEqual(["SONATA PLUG-IN HYBRID", "SONATA PLUG-IN"]);
+    expect([shorterNames("AIR BEV"), shorterNames("CR-V")]).toEqual([[], []]);
     expect(identify("F-150 (SUPER CREW) LIGHTNING BEV", ["F-150 LIGHTNING BEV", "F-150 HYBRID"])).toEqual(["F-150 LIGHTNING BEV"]);
     expect(identify("F-150 (SUPER CREW) HEV", ["F-150 HYBRID"])).toEqual(["F-150 HYBRID"]); // no name fits, so the records are trusted
     expect(identify("AIR", [])).toEqual(["AIR"]);
@@ -80,6 +88,7 @@ describe("the name rules, the same as src/carsafety/vehicles.py", () => {
     for (const [a, b, ...expected] of fixture.pairs) expect([sameName(a, b), within(a, b), related(a, b)], `${a} | ${b}`).toEqual(expected);
     for (const [name, names, expected] of fixture.closest) expect(closestRecallNames(name, names), name).toEqual(expected);
     for (const [chosen, models, expected] of fixture.identify) expect(identify(chosen, models), chosen).toEqual(expected);
+    for (const [name, expected] of fixture.shorter) expect(shorterNames(name), name).toEqual(expected);
   });
 });
 
@@ -205,7 +214,7 @@ describe("search", () => {
       [path("recalls", ford("F-150"))]: [recall("23V900002")],
     });
     const found = await search(ford(lightning), f150s, ["F-150", "F-150 LIGHTNING BEV"], undefined, fetcher);
-    expect(found.names).toEqual([lightning, "F-150", "F-150 LIGHTNING BEV"]);
+    expect(found.names).toEqual([lightning, "F-150", "F-150 LIGHTNING BEV", "F-150 LIGHTNING"]); // the last, a shorter version
     expect(found.models).toEqual(["F-150 LIGHTNING BEV"]);
     expect(found.recalls.map((r) => r.campaign)).toEqual(["23V900001"]);
     expect(found.relatedRecalls.map((r) => r.campaign)).toEqual(["23V900002"]);
@@ -261,6 +270,39 @@ describe("search", () => {
     expect(calls).toContain(path("recalls", benz("E450")));
     expect(found.recalls.map((r) => [r.campaign, r.listedAs])).toEqual([["20V900001", "E450"]]);
     expect(found.complaints.map((c) => c.odiNumber)).toEqual(["1", "2"]);
+  });
+
+  it("gives a name in no list the recall name it shortens, not a shorter one", async () => {
+    // "F-150 LIGHTNING" is in neither NHTSA's vehicle list nor its recall file, and has no complaints. NHTSA's API
+    // files two Lightning recalls under it, and the rest under F-150 LIGHTNING BEV (checked Oct 3, 2026). F-150 is
+    // the gasoline truck. The campaigns here are made up.
+    const ford = (model: string) => at("2023", "FORD", model);
+    const { fetcher } = server({
+      [path("recalls", ford("F-150 LIGHTNING"))]: [recall("23V900003")],
+      [path("recalls", ford("F-150 LIGHTNING BEV"))]: [recall("23V900001")],
+      [path("recalls", ford("F-150"))]: [recall("23V900002")],
+    });
+    const found = await search(ford("F-150 LIGHTNING"), f150s, ["F-150", "F-150 LIGHTNING BEV"], undefined, fetcher);
+    expect(found.recalls.map((r) => [r.campaign, r.listedAs])).toEqual([
+      ["23V900003", "F-150 LIGHTNING"],
+      ["23V900001", "F-150 LIGHTNING BEV"],
+    ]);
+    expect(found.relatedRecalls.map((r) => [r.campaign, r.listedAs])).toEqual([["23V900002", "F-150"]]);
+  });
+
+  it("lists recalls under a shorter version of the name apart", async () => {
+    // Picking the trim, the two recalls under "F-150 LIGHTNING" are found through the shorter name and kept apart.
+    const ford = (model: string) => at("2023", "FORD", model);
+    const lightning = "F-150 (SUPER CREW) LIGHTNING BEV";
+    const { fetcher, calls } = server({
+      [path("complaints", ford(lightning))]: [complaint(1, ford("F-150 LIGHTNING BEV"))],
+      [path("recalls", ford("F-150 LIGHTNING BEV"))]: [recall("23V900001")],
+      [path("recalls", ford("F-150 LIGHTNING"))]: [recall("23V900003")],
+    });
+    const found = await search(ford(lightning), f150s, ["F-150", "F-150 LIGHTNING BEV"], undefined, fetcher);
+    expect(calls).toContain(path("recalls", ford("F-150 LIGHTNING")));
+    expect(found.recalls.map((r) => r.campaign)).toEqual(["23V900001"]);
+    expect(found.relatedRecalls.map((r) => [r.campaign, r.listedAs])).toEqual([["23V900003", "F-150 LIGHTNING"]]);
   });
 
   it("finds the complaints filed under the list's name for a recall-file name", async () => {

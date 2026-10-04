@@ -129,12 +129,28 @@ export function relatedNames(name: string, names: readonly string[]): string[] {
 }
 
 /**
- * The recall-file names that are this name or within it, keeping only the most specific. For
- * "F-150 (SUPER CREW) LIGHTNING BEV" that's "F-150 LIGHTNING BEV", not "F-150".
+ * The recall-file names that are this name's, judged by the name alone. The first of these that finds any:
+ *   1. names spelled the same ("MUSTANG MACH E" for "MUSTANG MACH-E")
+ *   2. the one name that is this name with more words ("F-150 LIGHTNING BEV" for "F-150 LIGHTNING"). If
+ *      several are, none: the name can't tell them apart.
+ *   3. the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for
+ *      "F-150 (SUPER CREW) LIGHTNING BEV"
  */
 export function closestRecallNames(name: string, recallFileNames: readonly string[]): string[] {
-  const fitting = recallFileNames.filter((r) => sameName(r, name) || within(r, name));
+  const same = recallFileNames.filter((r) => sameName(r, name));
+  if (same.length) return same;
+  const longer = recallFileNames.filter((r) => within(name, r));
+  if (longer.length) return longer.length === 1 ? longer : [];
+  const fitting = recallFileNames.filter((r) => within(r, name));
   return fitting.filter((r) => !fitting.some((other) => within(r, other)));
+}
+
+/** The name without its last words, keeping at least two: "F-150 LIGHTNING BEV" -> ["F-150 LIGHTNING"]. */
+export function shorterNames(name: string): string[] {
+  const parts = name.split(/\s+/).filter(Boolean);
+  const out: string[] = [];
+  for (let k = parts.length - 1; k >= 2; k--) out.push(parts.slice(0, k).join(" "));
+  return out;
 }
 
 /**
@@ -170,8 +186,9 @@ type ApiFetcher = Parameters<typeof recallsFor>[2];
 /**
  * Recalls and complaints for a vehicle, under its name and every related name in `listed`. The
  * complaints found under the chosen name (or one spelled the same) say which model it is. Recalls are
- * its own when filed under the chosen name, a name spelled the same, those models, or the closest
- * recall-file names within them; recalls under other related names are kept apart. Complaints are its
+ * its own when filed under the chosen name, a name spelled the same, those models, or their closest
+ * recall-file names; recalls under other related names, and under shorter versions of the vehicle's recall
+ * names, are kept apart. Complaints are its
  * own when their record names one of those models. Complaints the chosen name's own search returns also
  * count when their record names a version of one with more words (the 2015 "FUSION HEV" search returns
  * FUSION HYBRID complaints) or no model at all; the rest are left out. A record found twice is kept once.
@@ -202,11 +219,20 @@ export async function search(
   const extra = ownNames.filter((name) => !foundRecalls.has(name)); // the records can point to a name not yet searched
   const more = await Promise.all(extra.map((name) => recallsFor(under(name), signal, fetcher)));
   extra.forEach((name, i) => foundRecalls.set(name, more[i]));
+  // NHTSA's API files a few recalls under a shorter name that's in none of its lists: two 2023 F-150
+  // Lightning recalls are under "F-150 LIGHTNING", not "F-150 LIGHTNING BEV" (checked Oct 3, 2026). So
+  // shorter versions of the vehicle's recall names are searched too. Their recalls count as related,
+  // because a shorter name can be a different vehicle ("F-150" is the gasoline truck).
+  const recallStyle = new Set([...recallFileNames, ...named]);
+  const shorter = unique(ownNames.filter((n) => recallStyle.has(n)).flatMap(shorterNames));
+  const missing = shorter.filter((name) => !foundRecalls.has(name));
+  const fromShorter = await Promise.all(missing.map((name) => recallsFor(under(name), signal, fetcher)));
+  missing.forEach((name, i) => foundRecalls.set(name, fromShorter[i]));
 
   const own = new Map<string, Recall>();
   for (const name of ownNames) for (const r of foundRecalls.get(name) ?? []) if (!own.has(r.campaign)) own.set(r.campaign, r);
   const others = new Map<string, Recall>();
-  for (const name of names) {
+  for (const name of unique([...names, ...shorter])) {
     for (const r of foundRecalls.get(name) ?? []) if (!own.has(r.campaign) && !others.has(r.campaign)) others.set(r.campaign, r);
   }
 
@@ -230,7 +256,7 @@ export async function search(
   }
 
   return {
-    names: unique([...names, ...ownNames]),
+    names: unique([...names, ...ownNames, ...shorter]),
     models,
     ownNames,
     recalls: [...own.values()],
