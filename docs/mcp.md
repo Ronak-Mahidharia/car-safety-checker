@@ -25,7 +25,7 @@ Every result is structured (each tool publishes a JSON schema) and carries a `no
 - **No guess about over-the-air fixes.** `over_the_air_fix` is sent only when NHTSA marks a remedy as an over-the-air update. The mark is reliable when set but often missing: in 53 recalls for seven electric vehicles (checked Oct 3, 2026), only 11 of the 18 remedies that mention an over-the-air update had it. So a missing mark is never reported as "no over-the-air fix", and the remedy text is always included.
 - **Misspellings aren't "no recalls".** A model name NHTSA doesn't use finds nothing, so the tools refuse that answer and suggest close names: "ACORD" for a 2019 Honda gets "Did you mean: ACCORD, ACCORD HYBRID?". Spaces and punctuation don't count as misspellings, so "CRV" finds the CR-V.
 - **NHTSA's own records say which records are the vehicle's.** A search covers related names, and the models named on the vehicle's complaint records decide which recalls and complaints are its own (`models_in_records`). The 2026 Lucid Air's complaints are found under "AIR BEV" and name "AIR", where its recalls are filed ([details](website.md#vehicle-names)).
-- **Similar names are kept apart.** Recalls under a similar name that may be a different vehicle, such as the gasoline MUSTANG's for a MUSTANG MACH-E, come in `related_recalls`, with a count of their safety warnings and a note telling the assistant not to present them as the vehicle's. Complaints whose records name another model are left out and counted (`left_out`).
+- **Similar names are kept apart.** Recalls under a similar name that may be a different vehicle, such as the gasoline MUSTANG's for a MUSTANG MACH-E, come in `related_recalls`, with a count of their safety warnings and a note telling the assistant not to present them as the vehicle's. A name in no list gets the recall-file name it shortens, not a shorter one: "F-150 LIGHTNING" gets "F-150 LIGHTNING BEV", not the gasoline "F-150". Complaints whose records name another model are left out and counted (`left_out`).
 - **Complaint text is treated as data.** Complaints are written by members of the public, so the instructions and each result tell the assistant to treat the text as information, never as instructions. This guards against text that tries to steer the assistant.
 
 ## Privacy
@@ -70,7 +70,7 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
 **Other MCP clients:** run the same command, `/path/to/car-safety-checker/.venv/bin/python -m carsafety.mcp_server`, as a stdio server.
 
 ## How it's checked
-- **The full suite:** 84 Python tests (pytest) pass, including 46 for the server and the code it uses. They need no network, because NHTSA's answers are faked.
+- **The full suite:** 87 Python tests (pytest) pass, including 49 for the server and the code it uses. They need no network, because NHTSA's answers are faked.
 - **Through a real MCP client:** the server's tests connect a real MCP client in-process and check:
   - the four read-only tools and their input limits
   - offline guesses
@@ -81,7 +81,7 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
   - the cap on long recall lists
   - the over-the-air mark, sent only when NHTSA sets it
   - the error when NHTSA is down
-- **Tests that catch planted bugs:** each of eight deliberate bugs, planted in a copy of the code, made tests fail:
+- **Tests that catch planted bugs:** each of ten deliberate bugs, planted in a copy of the code, made tests fail:
   - warnings no longer first
   - complaint text no longer masked
   - a misspelled model reading as "no recalls"
@@ -90,14 +90,16 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
   - recalls under similar names counted as the vehicle's own (Oct 3)
   - complaints about another model kept (Oct 3)
   - spaces and punctuation counted in names (Oct 3)
+  - a name in no list taking a shorter recall name instead of the one it shortens (Oct 3)
+  - recalls under shorter versions of the vehicle's names counted as its own (Oct 3)
 - **The same answers as the website.** NHTSA's live answers for the 2019 Honda CR-V, 2026 Lucid Air BEV, and 2025 Isuzu NPR HD were saved once, then run through both the Python server code and the website's TypeScript. All 27 checks were identical:
   - the likely components and top-3 guesses, with confidence within 0.00000001
   - the recall order, warnings, and names
   - the top 10 complaints, in order, with the same similarity scores
   - the masked text
-- **The same vehicle-name search in both languages (Oct 3).** NHTSA's live answers for 12 vehicles were saved once and run through the Python and TypeScript searches, and all 108 compared fields were identical. The vehicles:
+- **The same vehicle-name search in both languages (Oct 3).** NHTSA's live answers for 13 vehicles were saved once and run through the Python and TypeScript searches, and all 117 compared fields were identical. The vehicles:
   - the 2022 Mach-E and gasoline Mustang
-  - three 2023 F-150 names (Lightning, Hybrid, and gasoline)
+  - four 2023 F-150 names (the Lightning's list name, "F-150 LIGHTNING", the Hybrid, and gasoline)
   - the 2026 Lucid under both names
   - the 2015 Fusion HEV and the 2016 Impala Eco eAssist
   - the 2019 CR-V, the 2025 Isuzu NPR HD, and the 2020 Mercedes-Benz E-Class

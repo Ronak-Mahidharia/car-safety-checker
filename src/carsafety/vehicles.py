@@ -99,12 +99,28 @@ def related_names(name: str, names: list[str]) -> list[str]:
 
 
 def closest_recall_names(name: str, recall_file_names: Iterable[str]) -> list[str]:
-    """The recall-file names that are this name or within it, keeping only the most specific.
-
-    For "F-150 (SUPER CREW) LIGHTNING BEV" that's "F-150 LIGHTNING BEV", not "F-150".
+    """The recall-file names that are this name's, judged by the name alone. The first of these that finds any:
+      1. names spelled the same ("MUSTANG MACH E" for "MUSTANG MACH-E")
+      2. the one name that is this name with more words ("F-150 LIGHTNING BEV" for "F-150 LIGHTNING"). If
+         several are, none: the name can't tell them apart.
+      3. the most specific names within it: "F-150 LIGHTNING BEV", not "F-150", for
+         "F-150 (SUPER CREW) LIGHTNING BEV"
     """
-    fitting = [r for r in recall_file_names if same_name(r, name) or within(r, name)]
+    names = list(recall_file_names)
+    same = [r for r in names if same_name(r, name)]
+    if same:
+        return same
+    longer = [r for r in names if within(name, r)]
+    if longer:
+        return longer if len(longer) == 1 else []
+    fitting = [r for r in names if within(r, name)]
     return [r for r in fitting if not any(within(r, other) for other in fitting)]
+
+
+def shorter_names(name: str) -> list[str]:
+    """The name without its last words, keeping at least two: "F-150 LIGHTNING BEV" -> ["F-150 LIGHTNING"]."""
+    parts = name.split()
+    return [" ".join(parts[:k]) for k in range(len(parts) - 1, 1, -1)]
 
 
 def identify(chosen: str, record_models: Iterable[str | None]) -> list[str]:
@@ -143,7 +159,8 @@ def search(vehicle: Vehicle, listed: list[str], recall_file_names: Iterable[str]
 
     The complaints found under the chosen name (or one spelled the same) say which model it is.
     Recalls are its own when filed under the chosen name, a name spelled the same, those models, or
-    the closest recall-file names within them; recalls under other related names are kept apart.
+    their closest recall-file names; recalls under other related names, and under shorter versions of
+    the vehicle's recall names, are kept apart.
     Complaints are its own when their record names one of those models. Complaints the chosen name's
     own search returns also count when their record names a version of one with more words (the 2015
     "FUSION HEV" search returns FUSION HYBRID complaints) or no model at all; the rest are left out. A
@@ -167,13 +184,22 @@ def search(vehicle: Vehicle, listed: list[str], recall_file_names: Iterable[str]
     for name in own_names:  # the records can point to a name the related names didn't include
         if name not in found_recalls:
             found_recalls[name] = recalls(under(name), fetch)
+    # NHTSA's API files a few recalls under a shorter name that's in none of its lists: two 2023 F-150
+    # Lightning recalls are under "F-150 LIGHTNING", not "F-150 LIGHTNING BEV" (checked Oct 3, 2026). So
+    # shorter versions of the vehicle's recall names are searched too. Their recalls count as related,
+    # because a shorter name can be a different vehicle ("F-150" is the gasoline truck).
+    recall_style = set(file_names) | set(named)
+    shorter = list(dict.fromkeys(p for n in own_names if n in recall_style for p in shorter_names(n)))
+    for name in shorter:
+        if name not in found_recalls:
+            found_recalls[name] = recalls(under(name), fetch)
 
     own: dict[str, Recall] = {}
     for name in own_names:
         for recall in found_recalls[name]:
             own.setdefault(recall.campaign, recall)
     others: dict[str, Recall] = {}
-    for name in names:
+    for name in dict.fromkeys([*names, *shorter]):
         for recall in found_recalls[name]:
             if recall.campaign not in own:
                 others.setdefault(recall.campaign, recall)
@@ -198,6 +224,6 @@ def search(vehicle: Vehicle, listed: list[str], recall_file_names: Iterable[str]
             elif model is not None and searched_for:
                 left_out[model] = left_out.get(model, 0) + 1
 
-    return Found(names=list(dict.fromkeys([*names, *own_names])), models=own_models, own_names=own_names,
+    return Found(names=list(dict.fromkeys([*names, *own_names, *shorter])), models=own_models, own_names=own_names,
                  recalls=list(own.values()), related_recalls=list(others.values()), complaints=list(mine.values()),
                  left_out=left_out)

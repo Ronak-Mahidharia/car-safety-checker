@@ -7,7 +7,7 @@ from pathlib import Path
 
 from carsafety.nhtsa import API, NhtsaError, Vehicle
 from carsafety.vehicles import (INDEX, closest_recall_names, identify, recall_names, related, related_names, same_name,
-                                search, vehicle_models, within, words)
+                                search, shorter_names, vehicle_models, within, words)
 
 FIXTURE = Path(__file__).resolve().parents[1] / "web" / "src" / "lib" / "fixtures" / "names.json"
 
@@ -50,6 +50,15 @@ def test_the_most_specific_recall_names_win():
     assert closest_recall_names("F-150 (SUPER CREW) HEV", names) == ["F-150"]
     assert closest_recall_names("MUSTANG MACH-E", names) == ["MUSTANG MACH E"]
     assert closest_recall_names("BRONCO", names) == []
+    # A name in no list: the one recall-file name that is it with more words beats a shorter one.
+    assert closest_recall_names("F-150 LIGHTNING", names) == ["F-150 LIGHTNING BEV"]
+    assert closest_recall_names("GRAND CHEROKEE", ["GRAND CHEROKEE L", "GRAND CHEROKEE 4XE"]) == []  # two: no guess
+
+
+def test_shorter_names_keep_at_least_two_words():
+    assert shorter_names("F-150 LIGHTNING BEV") == ["F-150 LIGHTNING"]
+    assert shorter_names("SONATA PLUG-IN HYBRID TOURING") == ["SONATA PLUG-IN HYBRID", "SONATA PLUG-IN"]
+    assert shorter_names("AIR BEV") == [] and shorter_names("CR-V") == []
 
 
 def test_the_complaint_records_say_which_model_it_is():
@@ -73,6 +82,8 @@ def test_the_typescript_fixture_still_has_this_codes_answers():
         assert closest_recall_names(name, names) == expected, name
     for chosen, models, expected in fixture["identify"]:
         assert identify(chosen, models) == expected, chosen
+    for name, expected in fixture["shorter"]:
+        assert shorter_names(name) == expected, name
 
 
 def test_the_index_has_the_names_nhtsas_list_misses():
@@ -163,7 +174,7 @@ def test_another_models_complaints_in_a_search_are_left_out():
         path("recalls", "2023", "FORD", "F-150"): [recall("23V900002")],
     })
     found = search(Vehicle("2023", "FORD", lightning), F150S, ["F-150", "F-150 LIGHTNING BEV"], fetch)
-    assert found.names == [lightning, "F-150", "F-150 LIGHTNING BEV"]
+    assert found.names == [lightning, "F-150", "F-150 LIGHTNING BEV", "F-150 LIGHTNING"]  # the last, a shorter version
     assert found.models == ["F-150 LIGHTNING BEV"]
     assert [r.campaign for r in found.recalls] == ["23V900001"] and [r.campaign for r in found.related_recalls] == ["23V900002"]
     assert [c.odi_number for c in found.complaints] == ["1", "3"] and found.left_out == {"F-150 HYBRID": 1}
@@ -196,6 +207,34 @@ def test_the_records_can_point_to_a_name_no_list_relates():
     assert path("recalls", "2023", "FORD", "F-150 HYBRID") in calls  # searched because the records name it
     assert [(r.campaign, r.listed_as) for r in found.recalls] == [("23V900002", "F-150")] and found.related_recalls == []
     assert [c.odi_number for c in found.complaints] == ["1"]
+
+
+def test_a_name_in_no_list_takes_the_recall_name_it_shortens_not_a_shorter_one():
+    # "F-150 LIGHTNING" is in neither NHTSA's vehicle list nor its recall file, and has no complaints. NHTSA's API
+    # files two Lightning recalls under it, and the rest under F-150 LIGHTNING BEV (checked Oct 3, 2026). F-150 is
+    # the gasoline truck. The campaigns here are made up.
+    fetch, _ = nhtsa_server({
+        path("recalls", "2023", "FORD", "F-150 LIGHTNING"): [recall("23V900003")],
+        path("recalls", "2023", "FORD", "F-150 LIGHTNING BEV"): [recall("23V900001")],
+        path("recalls", "2023", "FORD", "F-150"): [recall("23V900002")],
+    })
+    found = search(Vehicle("2023", "FORD", "F-150 LIGHTNING"), F150S, ["F-150", "F-150 LIGHTNING BEV"], fetch)
+    assert [(r.campaign, r.listed_as) for r in found.recalls] == [("23V900003", "F-150 LIGHTNING"), ("23V900001", "F-150 LIGHTNING BEV")]
+    assert [(r.campaign, r.listed_as) for r in found.related_recalls] == [("23V900002", "F-150")]
+
+
+def test_recalls_under_a_shorter_version_of_the_name_are_listed_apart():
+    # Picking the trim, the two recalls under "F-150 LIGHTNING" are found through the shorter name and kept apart.
+    lightning = "F-150 (SUPER CREW) LIGHTNING BEV"
+    fetch, calls = nhtsa_server({
+        path("complaints", "2023", "FORD", lightning): [complaint(1, "2023", "FORD", "F-150 LIGHTNING BEV")],
+        path("recalls", "2023", "FORD", "F-150 LIGHTNING BEV"): [recall("23V900001")],
+        path("recalls", "2023", "FORD", "F-150 LIGHTNING"): [recall("23V900003")],
+    })
+    found = search(Vehicle("2023", "FORD", lightning), F150S, ["F-150", "F-150 LIGHTNING BEV"], fetch)
+    assert path("recalls", "2023", "FORD", "F-150 LIGHTNING") in calls
+    assert [r.campaign for r in found.recalls] == ["23V900001"]
+    assert [(r.campaign, r.listed_as) for r in found.related_recalls] == [("23V900003", "F-150 LIGHTNING")]
 
 
 def test_a_recall_file_name_finds_complaints_filed_under_the_lists_name():
