@@ -2,12 +2,44 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 3 of 4. The AI is built and measured, the website runs entirely in the browser, and AI assistants can use it through an MCP server, whose use by two local models is measured too.
+> **Status:** week 4 of 4. The AI is built and measured, the website runs entirely in the browser, and AI assistants can use it through an MCP server, whose use by two local models is measured too. The [write-up](docs/write-up.md) tells the whole story, with the numbers behind each decision.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
 ## The idea
 When something goes wrong with a car, owners want to know two things: is this a known problem, and is there a recall? NHTSA publishes every safety complaint it receives and every recall, but searching them by hand is slow. This project takes a plain-English description, works out which part of the car it's about, and shows the matching recalls and complaints, with links to the official records.
+
+## How it fits together
+```mermaid
+flowchart TB
+    files[("NHTSA's downloadable files<br/>complaints since 2015, recalls")]
+    api[("NHTSA's public API<br/>recalls, complaints, model names")]
+
+    subgraph offline["Built and measured offline, in Python"]
+        key["Answer key<br/>723,204 labeled complaints, split by date"]
+        models["Keyword model, embeddings,<br/>local AI models in Ollama"]
+        results["Published results<br/>docs/results/"]
+        small["1 MB browser model<br/>and NHTSA's recall-file names"]
+    end
+
+    subgraph live["Used live"]
+        site["Website<br/>React and TypeScript, runs in the browser"]
+        mcp["MCP server<br/>4 read-only tools over stdio"]
+    end
+
+    files --> key --> models --> results
+    models --> small
+    files --> small
+    small --> site
+    small --> mcp
+    site -- "year, make, and model only" --> api
+    mcp -- "year, make, and model only" --> api
+    assistant["AI assistant<br/>Claude Desktop, Claude Code"] <--> mcp
+    toolEval["Tool-use evaluation<br/>local models, NHTSA's answers frozen"] --> mcp
+```
+
+- **Offline, in Python:** NHTSA's own component labels are the answer key for every model, and every result is published in [`docs/results/`](docs/results).
+- **Live:** the website and the MCP server share the same 1 MB model and the same vehicle-name rules, in TypeScript and Python, and tests check that both give the same answers. Both send NHTSA only the vehicle.
 
 ## How it works
 1. **Find similar complaints.** Every past complaint is turned into an embedding (768 numbers that capture its meaning) with `nomic-embed-text`. A new description is matched against 200,000 past complaints, so a complaint about the same problem is found even when it uses different words.
@@ -65,6 +97,13 @@ The demo runs a small version of the keyword model inside the visitor's browser,
 
 ## The website
 Pick a vehicle, describe the problem, and the page shows the vehicle's recalls and the closest owner complaints, each linked to NHTSA's record ([details](docs/website.md)). It needs no server: the model runs in the browser, and the recalls and complaints come live from NHTSA's public API.
+
+<p>
+  <img src="docs/images/website-desktop.png" alt="The website on a wide screen for a 2026 Lucid Air BEV: a Park Outside safety warning comes first, with 4 recalls, 6 owner complaints, and the likely components" width="70%">
+  <img src="docs/images/website-phone-dark.png" alt="The website on a phone in dark mode for a 2019 Honda CR-V: 8 recalls, 1,101 owner complaints, and the likely components" width="21%">
+</p>
+
+*The built site with NHTSA's live data on Oct 3, 2026: a wide screen in light mode, and a phone in dark mode.*
 - **Every recall is shown,** with Do Not Drive and Park Outside advisories first, then those for the likely components. NHTSA's API names one component per recall even when a recall covers several, so matching only highlights recalls and never hides one.
 - **Vehicle names are handled carefully.** NHTSA's API names the same vehicle in more than one way: the 2026 Lucid Air's complaints are found under "AIR BEV" and its recalls under "AIR". The picker also lists the 40,093 model names in NHTSA's recall file. A search covers related names, and the model named on NHTSA's own complaint records decides which recalls and complaints are the vehicle's, so the 2022 Mustang Mach-E gets its own recalls, not the gasoline Mustang's. Recalls under similar names are listed apart, never hidden.
 - **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics, and a Content Security Policy limits connections to NHTSA's API.
@@ -141,7 +180,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 1. **Week 1:** answer key and baselines (done)
 2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
 3. **Week 3:** the browser model (done), the website (done), an MCP server for AI assistants and an evaluation of how models use it (done), and a free live demo
-4. **Week 4:** write-up, demo, and polish
+4. **Week 4:** the [write-up](docs/write-up.md), an architecture diagram, and screenshots (done)
 
 ## License
 Code: MIT (see [LICENSE](LICENSE)). Data: public records published by NHTSA. Models: see the table above.
