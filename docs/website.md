@@ -1,5 +1,7 @@
 # The website
 
+Live at [ronak-mahidharia.github.io/car-safety-checker](https://ronak-mahidharia.github.io/car-safety-checker/), published with GitHub Pages after every merge to `main` ([workflow](../.github/workflows/pages.yml)).
+
 Numbers measured on NHTSA's live data are from Oct 2–3, 2026. NHTSA adds records over time, so they can change.
 
 ## What it does
