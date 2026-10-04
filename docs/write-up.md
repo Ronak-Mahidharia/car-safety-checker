@@ -1,5 +1,7 @@
 # Building Car Safety Checker: what I measured, and what I learned
 
+Try the website: [ronak-mahidharia.github.io/car-safety-checker](https://ronak-mahidharia.github.io/car-safety-checker/).
+
 Car Safety Checker takes a plain-English description of a car problem, such as "the engine hesitates when I speed up and the check engine light comes on", and shows the official NHTSA recalls and owner complaints that match it, with every record linked. It has three parts: a model that names the part of the car a complaint is about, a website that runs in the browser, and a server that lets AI assistants use the same tools.
 
 I set myself one rule: no claim without a number behind it. This write-up follows the project in order, with the numbers that shaped each decision. The details are in the [README](../README.md) and the documents it links.
@@ -76,7 +78,6 @@ I also checked the checks. After the last run, I listed the phrase behind every 
 ## What I'd do next
 - **Measure retrieval directly.** Similar-complaint voting scores 0.625 micro F1, which shows the search finds relevant complaints, but I haven't measured how often the top results share the right component.
 - **Try a larger model** on the tool-use questions. The two small models here still told owners their car "has four open recalls", which the tools can't know.
-- **Put the demo online**, free to host, because the model runs in the browser.
 
 ## How it's checked
 - 101 Python tests and 73 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.

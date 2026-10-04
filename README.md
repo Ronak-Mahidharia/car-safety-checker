@@ -2,6 +2,8 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
+**Try it:** [ronak-mahidharia.github.io/car-safety-checker](https://ronak-mahidharia.github.io/car-safety-checker/). It's free, there's no sign-up, and your description stays in your browser.
+
 [![CI](https://github.com/Ronak-Mahidharia/car-safety-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/Ronak-Mahidharia/car-safety-checker/actions/workflows/ci.yml)
 
 **What's here:**
@@ -103,7 +105,7 @@ The website runs a small version of the keyword model inside the visitor's brows
 - **Private:** the problem description is analyzed on the visitor's device and isn't sent anywhere.
 
 ## The website
-Pick a vehicle, describe the problem, and the page shows the vehicle's recalls and the closest owner complaints, each linked to NHTSA's record ([details](docs/website.md)). It needs no server: the model runs in the browser, and the recalls and complaints come live from NHTSA's public API.
+Pick a vehicle, describe the problem, and the page shows the vehicle's recalls and the closest owner complaints, each linked to NHTSA's record ([details](docs/website.md)). It needs no server: the model runs in the browser, and the recalls and complaints come live from NHTSA's public API. It's published with GitHub Pages at [ronak-mahidharia.github.io/car-safety-checker](https://ronak-mahidharia.github.io/car-safety-checker/).
 
 <p>
   <img src="docs/images/website-desktop.png" alt="The website on a wide screen for a 2026 Lucid Air BEV: a Park Outside safety warning comes first, with 4 recalls, 6 owner complaints, and the likely components" width="70%">
