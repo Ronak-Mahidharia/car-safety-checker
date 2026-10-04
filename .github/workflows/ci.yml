@@ -10,6 +10,9 @@ permissions:
   contents: read
 
 jobs:
+  # Both jobs name their runner image, so CI doesn't change under us. ubuntu-latest moves from Ubuntu
+  # 24.04 to 26.04 between Oct 19 and Nov 19, 2026 (actions/runner-images#14748); CI passed on
+  # ubuntu-26.04 before it was pinned (checked Oct 3, 2026). A later image is a deliberate change.
   test:
     runs-on: ubuntu-26.04
     timeout-minutes: 10
