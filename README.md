@@ -2,7 +2,14 @@
 
 Describe a problem with your car and see the official NHTSA recalls and the owner complaints that match it, with every source linked. Its accuracy is measured against NHTSA's own labels and published here.
 
-> **Status:** week 4 of 4. The AI is built and measured, the website runs entirely in the browser, and AI assistants can use it through an MCP server, whose use by two local models is measured too. The [write-up](docs/write-up.md) tells the whole story, with the numbers behind each decision.
+[![CI](https://github.com/Ronak-Mahidharia/car-safety-checker/actions/workflows/ci.yml/badge.svg)](https://github.com/Ronak-Mahidharia/car-safety-checker/actions/workflows/ci.yml)
+
+**What's here:**
+- **A model** that names the part of the car a complaint is about, measured on 1,000 held-out complaints.
+- **A website** that runs entirely in the browser.
+- **An MCP server** that lets AI assistants use the same lookups, with a published evaluation of how models use it.
+
+The [write-up](docs/write-up.md) explains the decisions behind each part.
 
 Not affiliated with or endorsed by NHTSA or the U.S. Department of Transportation. This is not a safety inspection. To check your car for open recalls, use NHTSA's official lookup at https://www.nhtsa.gov/recalls.
 
@@ -88,8 +95,8 @@ Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full 
 - **Each step helped the AI.** For `granite4:3b`, micro F1 went from 0.547 on its own to 0.668 with RAG and 0.701 as a hybrid. For `qwen3:8b`, it went from 0.532 to 0.669 to 0.694.
 - **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` kept pace with the 8.2-billion-parameter `qwen3:8b` and ran about 2.6 times faster.
 
-## The model in the live demo
-The demo runs a small version of the keyword model inside the visitor's browser, so it needs no server and costs nothing to host ([details](docs/results/browser-model.md)):
+## The model in the browser
+The website runs a small version of the keyword model inside the visitor's browser, so it needs no server and costs nothing to host ([details](docs/results/browser-model.md)):
 - **About 1 MB** (20,000 terms and 8-bit weights), against 78.6 MB for the full model. The vocabulary size was chosen on the 2024 dev split.
 - **Same accuracy:** 0.719 micro F1 on the full test split, the same as the full model.
 - **Same answers in Python and in the browser:** a test checks that the TypeScript version gives exactly the same labels as the Python version on all 1,000 test complaints.
@@ -130,7 +137,7 @@ AI assistants that support the Model Context Protocol, such as Claude Desktop an
   - **The checks were checked too.** Every phrase behind a pass was read, which found three rules that were too loose or too strict, and every run was scored again.
 
 ## Reproduce
-Requires Python 3.12 or newer. Week 2 also needs [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
+Requires Python 3.12 or newer. The AI experiments also need [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -140,13 +147,13 @@ python scripts/build_answer_key.py   # about 15 seconds
 python scripts/run_baselines.py      # about 1 minute
 python -m pytest
 
-# Week 2: local AI models (about 7.6 GB in total)
+# The AI experiments (the local models take about 7.6 GB)
 ollama pull nomic-embed-text && ollama pull granite4:3b && ollama pull qwen3:8b
 python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
 python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag hybrid --prompt v1 v2
 python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn blend alone rag hybrid --prompt auto   # about 3.5 hours
 
-# Week 3: the browser model (about 1 minute), the website's data files, and the tests (needs Node.js 24)
+# The browser model (about 1 minute), the website's data files, and the website's tests (needs Node.js 24)
 python scripts/build_browser_model.py
 python scripts/build_vehicle_index.py && python scripts/build_web_fixtures.py
 cd web && npm ci && npm test
@@ -160,6 +167,16 @@ python scripts/run_tool_eval.py --record && python scripts/run_tool_eval.py --la
 ```
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
+
+## Project structure
+| Folder | What's in it |
+|---|---|
+| [`src/carsafety/`](src/carsafety) | The Python package: the answer key, models, NHTSA client, vehicle names, MCP server, and evaluation code |
+| [`scripts/`](scripts) | One command per step: download, build, evaluate |
+| [`web/`](web) | The website (React, TypeScript, Vite) and its tests |
+| [`tests/`](tests) | The Python tests (pytest) |
+| [`docs/`](docs) | How each part works, the write-up, and every result |
+| [`data/`](data) | The fixed 1,000-complaint test sample and the tool-use questions. Downloaded data stays out of git. |
 
 ## Models
 | Model | Used for | Size | License |
@@ -176,11 +193,10 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 - **The website and the MCP server** send only the vehicle's year, make, and model to NHTSA's API. Descriptions never leave your device, and complaint records' partial VINs are never kept or shown.
 - **Downloaded files stay out of git:** `data/raw/` and `data/processed/` are ignored.
 
-## Roadmap
-1. **Week 1:** answer key and baselines (done)
-2. **Week 2:** the AI: similar-complaint search, component naming with and without RAG, a hybrid with the keyword model, recall lookup, and a fair comparison (done)
-3. **Week 3:** the browser model (done), the website (done), an MCP server for AI assistants and an evaluation of how models use it (done), and a free live demo
-4. **Week 4:** the [write-up](docs/write-up.md), an architecture diagram, and screenshots (done)
+## Limits
+- **It shows what NHTSA has on file for a model and year,** not whether a recall covers a particular car. Only a VIN lookup can tell that: https://www.nhtsa.gov/recalls.
+- **The component guess can be wrong.** On 1,000 complaints from 2025 and 2026, the website's model had one of NHTSA's components as its top guess 83.1% of the time. Recalls are never hidden because of a guess.
+- **NHTSA's data changes.** The downloaded files and the measurements here are from late September and early October 2026.
 
 ## License
 Code: MIT (see [LICENSE](LICENSE)). Data: public records published by NHTSA. Models: see the table above.
