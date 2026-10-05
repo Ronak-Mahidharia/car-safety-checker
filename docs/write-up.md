@@ -80,7 +80,7 @@ I also checked the checks. After the last run, I listed the phrase behind every 
 - **Try a larger model** on the tool-use questions. The two small models here still told owners their car "has four open recalls", which the tools can't know.
 
 ## How it's checked
-- 101 Python tests and 73 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
+- 101 Python tests and 85 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
 - Python and TypeScript are tested against each other wherever they share logic: labels, masking, the browser model, and vehicle names.
 - Every approach's answers on the test sample, and every model answer in the tool-use evaluation, are published, so each score can be checked without running anything.
 - All models run locally through Ollama, so the whole project costs $0 to run.

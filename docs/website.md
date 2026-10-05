@@ -98,9 +98,10 @@ The page shows these as guesses with a confidence, never as findings.
   - the Safety warnings tile appears only when there's a warning, and first; a "0" there could be misread
   - example descriptions fill in only the text box, never a vehicle, so they don't suggest that any car has those problems
 - **Light:** no outside fonts, icon libraries, or images. The icons are drawn for the site in SVG.
+- **Link previews:** a shared link shows the site's name, a one-line description, and a 1200 × 630 picture ([`social-preview.png`](../web/public/social-preview.png)), through Open Graph tags. The page itself never loads the picture.
 
 ## How it's checked
-**83 tests (Vitest), run in CI:**
+**85 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -112,6 +113,7 @@ The page shows these as guesses with a confidence, never as findings.
   - the partial VIN is dropped
   - each complaint record's model is read, and records found under several names are sorted into the vehicle's own and those under similar names
 - Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning.
+- The page has the Open Graph tags that sharing sites read, and its preview picture is in `public/` at the size the tags give (at least LinkedIn's 1200 × 627, about 1.91:1, under 5 MB).
 - Vehicle names: the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Six deliberate bugs, introduced in a copy of the name code, each made tests fail. On NHTSA's saved live answers for 14 vehicles, one of them a typo, the TypeScript and Python searches agreed on all 126 compared fields ([details](mcp.md#how-its-checked)).
 
 **On the built site in headless Chrome:**
