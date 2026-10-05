@@ -16,7 +16,7 @@ All four are read-only: they look things up and never change anything.
 | `vehicle_recalls` | Lists every recall for a vehicle: Do Not Drive and Park Outside warnings first, then, with a description, those for the likely components | Yes |
 | `similar_complaints` | Finds owner complaints filed under the likely components, the closest wording first (up to 10) | Yes |
 
-Every result is structured (each tool publishes a JSON schema) and carries a `note` for the assistant to pass on. Recalls and complaints link to NHTSA's record.
+Every result is structured (each tool publishes a JSON schema) and carries a `note` for the assistant to pass on. Recalls and complaints link to NHTSA's own page for the record (`nhtsa_record`), which shows it and offers a PDF.
 
 ## Safety by design
 - **Never "safe".** The server's instructions tell the assistant that these tools never show a car is safe, never to say a car has no open recalls, and always to point to NHTSA's VIN lookup (https://www.nhtsa.gov/recalls). Every recall result repeats that.

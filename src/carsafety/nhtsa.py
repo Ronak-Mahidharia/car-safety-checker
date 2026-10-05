@@ -29,6 +29,9 @@ from .labels import normalize
 from .privacy import scrub
 
 API = "https://api.nhtsa.gov"
+# NHTSA's own page for one recall or complaint, with the record and a PDF of it. Links point there,
+# because the API's JSON is for programs, not people.
+RECORD_PAGE = "https://www.nhtsa.gov/recalls"
 USER_AGENT = "car-safety-checker/0.1"
 TIMEOUT_SECONDS = 30
 
@@ -204,7 +207,7 @@ def to_recall(row: dict, listed_as: str) -> Recall:
         do_not_drive=row.get("parkIt") is True,
         park_outside=row.get("parkOutSide") is True,
         over_the_air=row.get("overTheAirUpdate") is True,
-        source=f"{API}/recalls/campaignNumber?{query(campaignNumber=campaign)}",
+        source=f"{RECORD_PAGE}?{query(nhtsaId=campaign)}",
         listed_as=listed_as,
     )
 
@@ -236,7 +239,7 @@ def to_complaint(row: dict, vehicle: Vehicle) -> Complaint:
         fire=row.get("fire") is True,
         injuries=_count(row.get("numberOfInjuries")),
         deaths=_count(row.get("numberOfDeaths")),
-        source=f"{API}/complaints/odinumber?{query(odinumber=odi_number)}",
+        source=f"{RECORD_PAGE}?{query(nhtsaId=odi_number)}",
         listed_as=vehicle.model,
         record_model=record_model(row, vehicle),
     )

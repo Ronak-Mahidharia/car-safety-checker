@@ -1,7 +1,7 @@
 // The API client, tested against a stand-in for NHTSA's server. The recall rows are shortened copies
 // of real public records (checked Oct 2, 2026); the complaint rows are made up.
 import { describe, expect, it } from "vitest";
-import { API, complaints, makes, modelYears, models, NhtsaError, recalls, recordModel, type Vehicle } from "./nhtsa";
+import { API, complaints, makes, modelYears, models, NhtsaError, RECORD_PAGE, recalls, recordModel, type Vehicle } from "./nhtsa";
 
 type Route = { status?: number; body: unknown };
 
@@ -100,7 +100,7 @@ describe("recalls", () => {
     const [frame, brakes, software, ...rest] = await recalls(crv, undefined, fetcher);
     expect(rest).toEqual([]); // the repeated campaign is listed once
     expect(frame).toMatchObject({ campaign: "19V865000", received: "2019-12-05", label: "STRUCTURE", doNotDrive: false, parkOutside: false });
-    expect(frame.source).toBe(`${API}/recalls/campaignNumber?campaignNumber=19V865000`);
+    expect(frame.source).toBe(`${RECORD_PAGE}?nhtsaId=19V865000`);
     expect(brakes).toMatchObject({ received: "2026-08-06", label: "SERVICE BRAKES", doNotDrive: true, parkOutside: false });
     expect(software).toMatchObject({ received: "2026-08-20", label: "ELECTRICAL SYSTEM", doNotDrive: false, parkOutside: true });
   });
@@ -141,7 +141,7 @@ describe("complaints", () => {
       fire: false,
       injuries: 2,
       deaths: 0,
-      source: `${API}/complaints/odinumber?odinumber=12345678`,
+      source: `${RECORD_PAGE}?nhtsaId=12345678`,
       listedAs: "CR-V",
       recordModel: "CR-V",
     });

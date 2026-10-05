@@ -18,7 +18,7 @@ const recall = (campaign: string, received: string, label: string, flags: Partia
   doNotDrive: false,
   parkOutside: false,
   overTheAir: false,
-  source: `https://api.nhtsa.gov/recalls/campaignNumber?campaignNumber=${campaign}`,
+  source: `https://www.nhtsa.gov/recalls?nhtsaId=${campaign}`,
   listedAs: "CR-V",
   ...flags,
 });
@@ -33,7 +33,7 @@ const complaint: Complaint = {
   fire: false,
   injuries: 1,
   deaths: 0,
-  source: "https://api.nhtsa.gov/complaints/odinumber?odinumber=12345678",
+  source: "https://www.nhtsa.gov/recalls?nhtsaId=12345678",
   listedAs: "CR-V",
   recordModel: "CR-V",
 };
@@ -45,6 +45,17 @@ describe("App", () => {
     expect(html).toContain('href="https://www.nhtsa.gov/recalls"');
     expect(html).toContain("Not affiliated with or endorsed by NHTSA");
     expect(html).toContain("It isn&#x27;t sent anywhere.");
+  });
+
+  it("has a dark mode switch, off until the page reads the device's setting or a saved choice", () => {
+    const html = renderToStaticMarkup(<App />);
+    expect(html).toMatch(/<button type="button" role="switch" aria-checked="false" aria-label="Dark mode"/);
+    expect(html).toContain("It remembers only your light or dark choice, in this browser.");
+  });
+
+  it("offers Start over, greyed out while there's nothing to clear", () => {
+    const html = renderToStaticMarkup(<App />);
+    expect(html).toMatch(/<button type="button" class="link-button start-over" disabled="">.*Start over<\/button>/);
   });
 });
 
@@ -93,8 +104,8 @@ describe("Results", () => {
     expect(html).toContain("0.81");
     expect(html).toContain("Crash");
     expect(html).toContain("1 injury");
-    expect(html).toContain('href="https://api.nhtsa.gov/complaints/odinumber?odinumber=12345678"');
-    expect(html).toContain('href="https://api.nhtsa.gov/recalls/campaignNumber?campaignNumber=17V000003"');
+    expect(html).toContain('href="https://www.nhtsa.gov/recalls?nhtsaId=12345678"');
+    expect(html).toContain('href="https://www.nhtsa.gov/recalls?nhtsaId=17V000003"');
   });
 });
 

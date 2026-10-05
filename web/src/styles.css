@@ -37,7 +37,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0b1020;
     --glow: rgba(126, 166, 255, 0.12);
     --surface: #121a2b;
@@ -64,6 +64,41 @@
     --ring: rgba(126, 166, 255, 0.45);
     --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a6b3c8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   }
+}
+
+/* The switch in the header can override the device's setting. The dark colors below repeat the ones
+   above; a test checks that the two copies stay the same. */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --glow: rgba(126, 166, 255, 0.12);
+  --surface: #121a2b;
+  --surface-2: #0f1727;
+  --border: #233049;
+  --border-strong: #34445f;
+  --input-border: #5c6b86;
+  --text: #e7ecf5;
+  --muted: #a6b3c8;
+  --brand: #7ea6ff;
+  --brand-hover: #9dbcff;
+  --on-brand: #0a1530;
+  --brand-soft: #18264a;
+  --brand-soft-text: #cddaff;
+  --danger-soft: #3b1518;
+  --danger-soft-text: #ffd3cd;
+  --danger-border: #8a3a33;
+  --warn-soft: #2e2306;
+  --warn-soft-text: #ffe3a1;
+  --warn-border: #5f4914;
+  --track: #24304a;
+  --meter-muted: #5f6f8c;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.35), 0 8px 24px rgba(0, 0, 0, 0.25);
+  --ring: rgba(126, 166, 255, 0.45);
+  --select-arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23a6b3c8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* ---------- Base ---------- */
@@ -216,6 +251,117 @@ a svg {
 
 .topbar-link:hover {
   border-color: var(--brand);
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* The light/dark switch. Checked means dark. Its track and thumb use the field-border and brand colors,
+   which meet 3:1 against the header in both themes. */
+.theme-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 6px 10px 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.theme-switch:hover {
+  border-color: var(--brand);
+}
+
+.theme-switch svg {
+  flex: none;
+  width: 18px;
+  height: 18px;
+}
+
+.switch-track {
+  position: relative;
+  flex: none;
+  width: 36px;
+  height: 22px;
+  border: 1px solid var(--input-border);
+  border-radius: 999px;
+  background: var(--track);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.switch-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.theme-switch[aria-checked="true"] .switch-track {
+  border-color: var(--brand);
+  background: var(--brand);
+}
+
+.theme-switch[aria-checked="true"] .switch-thumb {
+  background: var(--on-brand);
+  transform: translateX(14px);
+}
+
+/* On phones the switch is a moon button, filled while dark mode is on, so the name fits on one line. */
+@media (max-width: 520px) {
+  .topbar-inner {
+    gap: 10px;
+  }
+
+  .topbar-actions {
+    gap: 8px;
+  }
+
+  .brand {
+    font-size: 1rem;
+  }
+
+  .logo {
+    width: 30px;
+    height: 30px;
+  }
+
+  .topbar-link {
+    padding: 6px 10px;
+  }
+
+  .theme-switch {
+    justify-content: center;
+    width: 40px;
+    padding: 0;
+  }
+
+  .theme-switch .switch-track {
+    display: none;
+  }
+
+  .theme-switch[aria-checked="true"] {
+    border-color: var(--brand);
+    background: var(--brand-soft);
+    color: var(--brand-soft-text);
+  }
+
+  .theme-switch[aria-checked="true"] svg {
+    fill: currentColor;
+  }
 }
 
 .hero {
@@ -540,6 +686,16 @@ textarea:focus-visible {
 
 .link-button svg.flip {
   transform: rotate(180deg);
+}
+
+.start-over {
+  justify-self: center;
+}
+
+.link-button:disabled {
+  color: var(--muted);
+  text-decoration: none;
+  cursor: default;
 }
 
 /* ---------- Results ---------- */

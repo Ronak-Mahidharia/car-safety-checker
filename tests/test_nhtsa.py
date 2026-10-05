@@ -10,7 +10,7 @@ from dataclasses import asdict
 import pytest
 
 from carsafety import nhtsa
-from carsafety.nhtsa import API, CachedFetch, NhtsaError, Vehicle
+from carsafety.nhtsa import API, RECORD_PAGE, CachedFetch, NhtsaError, Vehicle
 
 
 def server(routes):
@@ -81,7 +81,7 @@ def test_recalls_read_dates_advisories_labels_and_links():
     ]})})
     frame, brakes, software = nhtsa.recalls(CRV, fetch)  # the repeated campaign is listed once
     assert (frame.campaign, frame.received, frame.label, frame.do_not_drive, frame.park_outside) == ("19V865000", "2019-12-05", "STRUCTURE", False, False)
-    assert frame.source == f"{API}/recalls/campaignNumber?campaignNumber=19V865000"
+    assert frame.source == f"{RECORD_PAGE}?nhtsaId=19V865000"
     assert (brakes.received, brakes.label, brakes.do_not_drive) == ("2026-08-06", "SERVICE BRAKES", True)
     assert (software.received, software.label, software.park_outside) == ("2026-08-20", "ELECTRICAL SYSTEM", True)
 
@@ -104,7 +104,7 @@ def test_complaints_keep_only_what_is_needed():
     assert complaint.components == ("SERVICE BRAKES", "FUEL SYSTEM, GASOLINE", "UNKNOWN OR OTHER")
     assert complaint.labels == ("FUEL/PROPULSION SYSTEM", "SERVICE BRAKES")
     assert (complaint.odi_number, complaint.filed, complaint.crash, complaint.injuries) == ("12345678", "2026-09-29", True, 2)
-    assert complaint.source == f"{API}/complaints/odinumber?odinumber=12345678"
+    assert complaint.source == f"{RECORD_PAGE}?nhtsaId=12345678"
     assert (complaint.listed_as, complaint.record_model) == ("CR-V", "CR-V")
 
 
