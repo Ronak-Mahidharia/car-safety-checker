@@ -11,6 +11,9 @@ import { normalize, normalizeAll, splitComponents } from "./labels";
 import { scrub } from "./privacy";
 
 export const API = "https://api.nhtsa.gov";
+// NHTSA's own page for one recall or complaint, with the record and a PDF of it. Links point there,
+// because the API's JSON is for programs, not people.
+export const RECORD_PAGE = "https://www.nhtsa.gov/recalls";
 
 export interface Vehicle {
   year: string;
@@ -120,7 +123,7 @@ export function toRecall(row: Row, listedAs: string): Recall {
     doNotDrive: row.parkIt === true,
     parkOutside: row.parkOutSide === true,
     overTheAir: row.overTheAirUpdate === true,
-    source: `${API}/recalls/campaignNumber?${query({ campaignNumber: campaign })}`,
+    source: `${RECORD_PAGE}?${query({ nhtsaId: campaign })}`,
     listedAs,
   };
 }
@@ -152,7 +155,7 @@ export function toComplaint(row: Row, vehicle: Vehicle): Complaint {
     fire: row.fire === true,
     injuries: count(row.numberOfInjuries),
     deaths: count(row.numberOfDeaths),
-    source: `${API}/complaints/odinumber?${query({ odinumber: odiNumber })}`,
+    source: `${RECORD_PAGE}?${query({ nhtsaId: odiNumber })}`,
     listedAs: vehicle.model,
     recordModel: recordModel(row, vehicle),
   };

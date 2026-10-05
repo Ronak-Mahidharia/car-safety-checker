@@ -94,3 +94,16 @@ export const ChevronIcon = (p: Props) => (
     <path d="m6 9 6 6 6-6" />
   </Icon>
 );
+
+export const MoonIcon = (p: Props) => (
+  <Icon {...p}>
+    <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" />
+  </Icon>
+);
+
+export const ResetIcon = (p: Props) => (
+  <Icon {...p}>
+    <path d="M4 12a8 8 0 1 0 2.4-5.7" />
+    <path d="M4 4v4.5h4.5" />
+  </Icon>
+);

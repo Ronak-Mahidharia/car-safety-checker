@@ -12,9 +12,13 @@ Numbers measured on NHTSA's live data are from Oct 2–3, 2026. NHTSA adds recor
    - **Every recall for the vehicle.** Recalls with a Do Not Drive or Park Outside advisory come first, then recalls for the likely components, then the rest, newest first in each group.
    - **Recalls under similar names**, listed apart, when NHTSA files recalls under a name that may be a different vehicle.
    - **The 10 complaints closest to your wording**, from those NHTSA filed under the likely components.
-   - **A link to NHTSA's record** for each recall and complaint.
+   - **A link to NHTSA's own page** for each recall and complaint (`https://www.nhtsa.gov/recalls?nhtsaId=…`), which shows the record and offers it as a PDF.
 
 It never says a car is safe, and it always points to NHTSA's official VIN lookup.
+
+**Also on the page:**
+- **Start over** clears the vehicle, the description, and the results, and removes the vehicle from the address.
+- **Dark mode:** a switch in the header picks light or dark. Until it's used, the page follows the device's setting.
 
 ## What NHTSA's API does, and how the page handles it
 
@@ -67,7 +71,7 @@ The recall-file names are a snapshot of `FLAT_RCL_POST_2010.txt` (SHA-256 `558c1
 ## Privacy
 - **Your description:** analyzed in the browser, and it's never sent anywhere. Only the year, make, and model go to NHTSA.
 - **Complaint text:** masked the same way as the published test sample. Emails, phone numbers, and full VINs are hidden.
-- **No tracking:** no cookies, no analytics, and no fonts or scripts from other servers.
+- **No tracking:** no cookies, no analytics, and no fonts or scripts from other servers. The page remembers one thing: a light or dark choice, kept in the browser's storage and never sent anywhere.
 - **Content Security Policy:** the built page carries one that allows connections only to the site itself and to api.nhtsa.gov.
 - **Links:** a link can fill in the form, for example `#year=2019&make=HONDA&model=CR-V&q=...`. The part after "#" never reaches the web server, and the page removes the description from the address once it has read it.
 
@@ -96,7 +100,7 @@ The page shows these as guesses with a confidence, never as findings.
 - **Light:** no outside fonts, icon libraries, or images. The icons are drawn for the site in SVG.
 
 ## How it's checked
-**73 tests (Vitest), run in CI:**
+**83 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -123,7 +127,13 @@ The page shows these as guesses with a confidence, never as findings.
 - None of the 315 partial VINs in the CR-V's 1,101 complaint records appears on the page.
 - There are no JavaScript errors and no policy violations. The only console messages are the browser noting NHTSA's expected 400 replies for names with no records.
 - Nothing is wider than the screen at 390 px, in light and dark mode.
-- Every text color pair meets WCAG AA contrast, and most meet AAA.
+- Every text color pair meets WCAG AA contrast, and most meet AAA. The dark mode switch's outline, track, and thumb stand out at least 3:1 in both themes (lowest 3.23:1).
+- **Dark mode, Start over, and the record links, on desktop and phone:**
+  - the switch follows the device until it's used, works over both device settings, and saves the choice without cookies
+  - after a reload, the saved choice applies before the page's own code runs, so the other theme never flashes
+  - the switch has a name and a state for screen readers
+  - Start over clears the vehicle, the description, the results, and the address, then moves focus to the first field
+  - every "NHTSA record" link opens NHTSA's page for that record, in a new tab
 
 ## Limits
 - It shows what NHTSA has on file for a model and year, not whether a recall covers your car. Only a VIN lookup can tell that.

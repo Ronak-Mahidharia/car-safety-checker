@@ -112,12 +112,12 @@ Pick a vehicle, describe the problem, and the page shows the vehicle's recalls a
   <img src="docs/images/website-phone-dark.png" alt="The website on a phone in dark mode for a 2019 Honda CR-V: 8 recalls, 1,101 owner complaints, and the likely components" width="21%">
 </p>
 
-*The built site with NHTSA's live data on Oct 3, 2026: a wide screen in light mode, and a phone in dark mode.*
+*The site with NHTSA's live data on Oct 5, 2026: a wide screen in light mode, and a phone in dark mode.*
 - **Every recall is shown,** with Do Not Drive and Park Outside advisories first, then those for the likely components. NHTSA's API names one component per recall even when a recall covers several, so matching only highlights recalls and never hides one.
 - **Vehicle names are handled carefully.** NHTSA's API names the same vehicle in more than one way: the 2026 Lucid Air's complaints are found under "AIR BEV" and its recalls under "AIR". The picker also lists the 40,093 model names in NHTSA's recall file. A search covers related names, and the model named on NHTSA's own complaint records decides which recalls and complaints are the vehicle's, so the 2022 Mustang Mach-E gets its own recalls, not the gasoline Mustang's. Recalls under similar names are listed apart, never hidden.
-- **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics, and a Content Security Policy limits connections to NHTSA's API.
-- **Designed for any screen:** two columns on wide screens and one on phones, in light and dark mode. It has a skip link, labeled fields, and WCAG AA contrast, and red appears only for NHTSA's safety warnings.
-- **Checked:** 73 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
+- **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics (only a light or dark choice is saved, in your browser), and a Content Security Policy limits connections to NHTSA's API.
+- **Designed for any screen:** two columns on wide screens and one on phones, in light and dark mode, with a dark mode switch and a Start over button. It has a skip link, labeled fields, and WCAG AA contrast, and red appears only for NHTSA's safety warnings.
+- **Checked:** 83 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
 
 ## The MCP server
 AI assistants that support the Model Context Protocol, such as Claude Desktop and Claude Code, can use the project as tools ([setup and details](docs/mcp.md)). Asked about a car problem, the assistant looks up NHTSA's records instead of guessing.

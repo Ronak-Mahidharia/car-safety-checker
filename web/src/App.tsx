@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { AlertIcon, CarIcon, LockIcon, SearchIcon } from "./components/Icons";
+import { AlertIcon, CarIcon, LockIcon, MoonIcon, ResetIcon, SearchIcon } from "./components/Icons";
 import { ExternalLink, plural, Results, type Analysis } from "./components/Results";
 import { VehiclePicker } from "./components/VehiclePicker";
 import { cleanAddress, readHash } from "./lib/hash";
 import { matchComplaints, orderRecalls } from "./lib/match";
 import { NhtsaError, type Vehicle } from "./lib/nhtsa";
+import { chooseTheme, currentTheme, savedTheme, type Theme } from "./lib/theme";
 import { recallNames, search, vehicleModels, type Found } from "./lib/vehicles";
 import { KeywordModel } from "./model/keywordModel";
 
@@ -30,6 +31,17 @@ type Records =
 
 const isComplete = (v: Partial<Vehicle>): v is Vehicle => Boolean(v.year && v.make && v.model);
 
+// Some browsers throw when a page touches storage that the user has blocked.
+function browserStorage(): Storage | undefined {
+  try {
+    return window.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
 export function App() {
   const prefill = useMemo(() => readHash(typeof window === "undefined" ? "" : window.location.hash), []);
   const [vehicle, setVehicle] = useState<Partial<Vehicle>>({ year: prefill.year, make: prefill.make, model: prefill.model });
@@ -44,6 +56,25 @@ export function App() {
   const [attempt, setAttempt] = useState(0);
   const [searches, setSearches] = useState(0);
   const resultsRef = useRef<HTMLElement>(null);
+  const [theme, setTheme] = useState<Theme>(() =>
+    typeof window === "undefined" ? "light" : currentTheme(savedTheme(browserStorage()), window.matchMedia(DARK_QUERY).matches),
+  );
+
+  // Until someone uses the switch, it shows the device's setting, which can change while the page is open.
+  useEffect(() => {
+    const media = window.matchMedia(DARK_QUERY);
+    const follow = () => {
+      if (!savedTheme(browserStorage())) setTheme(media.matches ? "dark" : "light");
+    };
+    media.addEventListener("change", follow);
+    return () => media.removeEventListener("change", follow);
+  }, []);
+
+  function toggleTheme() {
+    const next: Theme = theme === "dark" ? "light" : "dark";
+    chooseTheme(next, document.documentElement, document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'), browserStorage());
+    setTheme(next);
+  }
 
   useEffect(() => {
     KeywordModel.load(`${import.meta.env.BASE_URL}model/`)
@@ -113,6 +144,17 @@ export function App() {
     setProblem(null);
   }, []);
 
+  const hasInput = Boolean(vehicle.year || vehicle.make || vehicle.model || description || submitted);
+
+  // Clears the vehicle, the description, and the results. The address loses the vehicle too.
+  function startOver() {
+    setVehicle({});
+    setDescription("");
+    setSubmitted(null);
+    setProblem(null);
+    document.getElementById("year")?.focus();
+  }
+
   function check(event: FormEvent) {
     event.preventDefault();
     const text = description.trim();
@@ -148,10 +190,28 @@ export function App() {
             </span>
             Car Safety Checker
           </p>
-          <ExternalLink href={VIN_LOOKUP} className="topbar-link">
-            <span className="wide-only">Check your VIN at NHTSA</span>
-            <span className="narrow-only">VIN check</span>
-          </ExternalLink>
+          <div className="topbar-actions">
+            <button
+              type="button"
+              role="switch"
+              aria-checked={theme === "dark"}
+              aria-label="Dark mode"
+              className="theme-switch"
+              onClick={toggleTheme}
+            >
+              <MoonIcon />
+              <span className="wide-only" aria-hidden="true">
+                Dark mode
+              </span>
+              <span className="switch-track" aria-hidden="true">
+                <span className="switch-thumb" />
+              </span>
+            </button>
+            <ExternalLink href={VIN_LOOKUP} className="topbar-link">
+              <span className="wide-only">Check your VIN at NHTSA</span>
+              <span className="narrow-only">VIN check</span>
+            </ExternalLink>
+          </div>
         </div>
       </header>
 
@@ -218,6 +278,10 @@ export function App() {
           <button type="submit" className="primary">
             <SearchIcon />
             Find matches
+          </button>
+          <button type="button" className="link-button start-over" onClick={startOver} disabled={!hasInput}>
+            <ResetIcon width="16" height="16" />
+            Start over
           </button>
           <p className="privacy">
             <LockIcon />
@@ -287,7 +351,8 @@ export function App() {
             <h2>Privacy</h2>
             <p>
               Recalls and complaints come from NHTSA's public data (api.nhtsa.gov) when you choose a vehicle. Only the year, make, and
-              model are sent. Your description stays in your browser. This page sets no cookies and has no analytics.
+              model are sent. Your description stays in your browser. This page sets no cookies and has no analytics. It remembers
+              only your light or dark choice, in this browser.
             </p>
           </div>
           <div>
