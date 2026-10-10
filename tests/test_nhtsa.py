@@ -3,6 +3,8 @@
 The cases mirror web/src/lib/nhtsa.test.ts and dates.test.ts, so both versions follow the same rules.
 Recall rows are shortened copies of real public records (checked Oct 2, 2026); complaint rows are made up.
 """
+import gzip
+import http.client
 import json
 import urllib.error
 from dataclasses import asdict
@@ -71,6 +73,37 @@ def test_no_connection_is_an_error(monkeypatch):
     with pytest.raises(NhtsaError, match="Couldn't reach NHTSA"):
         nhtsa.http_get(f"{API}/recalls/recallsByVehicle?{CRV_QUERY}")
 
+
+
+class Reply:
+    """A stand-in for the answer urlopen gives."""
+
+    def __init__(self, body=b"", encoding=None, error=None):
+        self.status, self.body, self.error = 200, body, error
+        self.headers = {"Content-Encoding": encoding} if encoding else {}
+
+    def read(self):
+        if self.error:
+            raise self.error
+        return self.body
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+def test_a_reply_cut_off_part_way_is_an_error(monkeypatch):
+    # Neither of these is an OSError, so they used to escape as other errors (found Oct 9, 2026).
+    url = f"{API}/recalls/recallsByVehicle?{CRV_QUERY}"
+    monkeypatch.setattr(nhtsa.urllib.request, "urlopen", lambda *a, **k: Reply(error=http.client.IncompleteRead(b"{")))
+    with pytest.raises(NhtsaError, match="Couldn't reach NHTSA"):
+        nhtsa.http_get(url)
+    damaged = gzip.compress(b'{"results": []}')[:-8]  # the end of the compressed reply is missing
+    monkeypatch.setattr(nhtsa.urllib.request, "urlopen", lambda *a, **k: Reply(damaged, encoding="gzip"))
+    with pytest.raises(NhtsaError, match="couldn't be read"):
+        nhtsa.http_get(url)
 
 def test_recalls_read_dates_advisories_labels_and_links():
     fetch, _ = server({f"/recalls/recallsByVehicle?{CRV_QUERY}": (200, {"results": [

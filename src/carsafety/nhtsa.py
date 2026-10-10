@@ -14,6 +14,7 @@ What the API does (checked Oct 2, 2026):
 from __future__ import annotations
 
 import gzip
+import http.client
 import json
 import re
 import threading
@@ -21,6 +22,7 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import zlib
 from dataclasses import dataclass
 from datetime import date
 from typing import Callable
@@ -48,13 +50,20 @@ def http_get(url: str) -> tuple[int, bytes]:
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT, "Accept": "application/json",
                                                    "Accept-Encoding": "gzip"})
     try:
-        with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
-            status, body, encoding = response.status, response.read(), response.headers.get("Content-Encoding")
-    except urllib.error.HTTPError as error:
-        status, body, encoding = error.code, error.read(), error.headers.get("Content-Encoding")
-    except (urllib.error.URLError, TimeoutError, OSError) as error:
+        try:
+            with urllib.request.urlopen(request, timeout=TIMEOUT_SECONDS) as response:
+                status, body, encoding = response.status, response.read(), response.headers.get("Content-Encoding")
+        except urllib.error.HTTPError as error:
+            status, body, encoding = error.code, error.read(), error.headers.get("Content-Encoding")
+    # http.client.HTTPException covers a reply cut off part way (IncompleteRead), which isn't an OSError
+    except (urllib.error.URLError, TimeoutError, OSError, http.client.HTTPException) as error:
         raise NhtsaError("Couldn't reach NHTSA. Check the connection and try again.") from error
-    return status, gzip.decompress(body) if encoding == "gzip" else body
+    if encoding != "gzip":
+        return status, body
+    try:
+        return status, gzip.decompress(body)
+    except (OSError, EOFError, zlib.error) as error:  # a compressed reply that was cut off or damaged
+        raise NhtsaError("NHTSA sent a reply that couldn't be read. Try again.") from error
 
 
 class CachedFetch:

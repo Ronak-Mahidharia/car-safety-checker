@@ -1,5 +1,14 @@
 """Tests for reading and grouping NHTSA complaint rows. All data here is made up."""
-from carsafety.complaints import FIELDS, PERSONAL, read_rows, split_by_date, to_complaints
+import os
+import re
+import subprocess
+import sys
+from pathlib import Path
+
+from carsafety import complaints
+from carsafety.complaints import FIELDS, PERSONAL, PUBLISHED_SOURCES, changed_sources, read_rows, split_by_date, to_complaints
+
+ROOT = Path(__file__).resolve().parent.parent
 
 
 def write_rows(path, rows):
@@ -70,3 +79,26 @@ def test_split_by_date_and_drop_unscorable(tmp_path):
     assert set(splits["test"].id) == {"100", "104"}
     assert set(splits["dev"].id) == {"102"}
     assert set(splits["train"].id) == set()  # 101 has no known component
+
+
+def test_the_published_sources_match_the_answer_key_document():
+    doc = (ROOT / "docs" / "answer-key.md").read_text(encoding="utf-8")
+    assert dict(re.findall(r"^\| (COMPLAINTS_RECEIVED_[\d-]+\.zip) \| `([0-9a-f]{64})` \|$", doc, re.M)) == PUBLISHED_SOURCES
+
+
+def test_changed_sources_finds_files_that_differ_or_are_missing(tmp_path, monkeypatch):
+    (tmp_path / "a.zip").write_bytes(b"the published file")
+    (tmp_path / "b.zip").write_bytes(b"updated since")
+    monkeypatch.setattr(complaints, "PUBLISHED_SOURCES",
+                        {"a.zip": complaints.sha256(tmp_path / "a.zip"), "b.zip": "0" * 64, "c.zip": "0" * 64})
+    assert changed_sources(tmp_path) == ["b.zip", "c.zip"]
+
+
+def test_building_the_answer_key_from_other_files_stops_before_writing_anything(tmp_path):
+    # NHTSA updates its files in place, so a new download used to replace the published test sample (found Oct 9, 2026).
+    published = {path: path.read_bytes() for path in (ROOT / "docs" / "answer-key.md", ROOT / "data" / "sample" / "test_sample.jsonl")}
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
+    run = subprocess.run([sys.executable, str(ROOT / "scripts" / "build_answer_key.py"), "--raw", str(tmp_path)],
+                         capture_output=True, text=True, env=env)
+    assert run.returncode != 0 and "aren't the ones the published answer key was built from" in run.stderr, run.stderr
+    assert all(path.read_bytes() == body for path, body in published.items())

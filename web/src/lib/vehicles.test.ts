@@ -5,7 +5,7 @@
 // names are NHTSA's.
 import { readFileSync } from "node:fs";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { API, type Vehicle } from "./nhtsa";
+import { API, LIMITS, type Vehicle } from "./nhtsa";
 import {
   closestRecallNames,
   identify,
@@ -120,6 +120,24 @@ describe("picker lists", () => {
         : new Response(JSON.stringify({ results: [] }), { status: 400 }),
     );
     expect(await vehicleModels("2026", "LUCID")).toEqual(["AIR", "AIR BEV", "GRAVITY", "GRAVITY BEV"]);
+  });
+
+  it("don't keep a model list made while NHTSA's list failed, so a second look gets NHTSA's names", async () => {
+    // Before Oct 9, 2026, the partial list was kept for the visit, so names only NHTSA has (AIR BEV) disappeared.
+    const saved = LIMITS.retryMs;
+    LIMITS.retryMs = 0;
+    let nhtsaUp = false;
+    stubFetch((url) => {
+      if (!nhtsaUp) throw new TypeError("Failed to fetch");
+      return new Response(JSON.stringify({ results: url.includes("make=RIVIAN") ? [{ model: "ONLY IN NHTSA'S LIST" }] : [] }));
+    });
+    try {
+      expect(await vehicleModels("2024", "RIVIAN")).toEqual(["EDV", "R1S", "R1T"]); // the index alone
+      nhtsaUp = true;
+      expect(await vehicleModels("2024", "RIVIAN")).toEqual(["EDV", "ONLY IN NHTSA'S LIST", "R1S", "R1T"]);
+    } finally {
+      LIMITS.retryMs = saved;
+    }
   });
 
   it("still work from the index when NHTSA's list can't be reached", async () => {

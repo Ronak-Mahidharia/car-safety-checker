@@ -53,6 +53,13 @@ describe("App", () => {
     expect(html).toContain("It remembers only your light or dark choice, in this browser.");
   });
 
+  it("has a skip link to the results, which can take focus", () => {
+    // The link moves focus itself, so the address keeps the chosen vehicle (#year=...) instead of becoming #results.
+    const html = renderToStaticMarkup(<App />);
+    expect(html).toContain('<a class="skip-link" href="#results">Skip to results</a>');
+    expect(html).toMatch(/<section id="results" class="results-panel" tabindex="-1"/);
+  });
+
   it("offers Start over, greyed out while there's nothing to clear", () => {
     const html = renderToStaticMarkup(<App />);
     expect(html).toMatch(/<button type="button" class="link-button start-over" disabled="">.*Start over<\/button>/);
@@ -106,6 +113,11 @@ describe("Results", () => {
     expect(html).toContain("1 injury");
     expect(html).toContain('href="https://www.nhtsa.gov/recalls?nhtsaId=12345678"');
     expect(html).toContain('href="https://www.nhtsa.gov/recalls?nhtsaId=17V000003"');
+  });
+
+  it("says \"Here is the one\" when one complaint is shown", () => {
+    expect(html).toContain("Here is the one with the wording closest to yours.");
+    expect(html).not.toContain("Here are the one");
   });
 });
 

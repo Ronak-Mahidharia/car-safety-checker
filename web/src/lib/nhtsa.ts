@@ -51,7 +51,47 @@ export interface Complaint {
   recordModel: string | null; // the model the record itself names, which can differ (see vehicles.ts)
 }
 
-export class NhtsaError extends Error {}
+export class NhtsaError extends Error {
+  /** Worth one more try: the connection dropped, NHTSA took too long, or its server was busy (429 or 5xx). */
+  constructor(message: string, readonly retry = false) {
+    super(message);
+  }
+}
+
+// A request that hangs ends with an error instead of loading forever, and a busy server or a dropped
+// connection gets one more try after a short pause. Tests shorten both.
+export const LIMITS = { timeoutMs: 20_000, retryMs: 800 };
+
+function pause(ms: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    if (signal) signal.addEventListener("abort", () => (clearTimeout(timer), reject(signal.reason)), { once: true });
+  });
+}
+
+/**
+ * The caller's signal plus a time limit, built by hand: AbortSignal.any arrived only in Safari 17.4, Firefox 124,
+ * and Chrome 116, and the site is built for older browsers too (Vite's default: Safari 16.4, Firefox 114, Chrome 111).
+ */
+function timeLimit(signal: AbortSignal | undefined, ms: number) {
+  const controller = new AbortController();
+  let expired = false;
+  const timer = setTimeout(() => {
+    expired = true;
+    controller.abort();
+  }, ms);
+  const cancel = () => controller.abort(signal?.reason);
+  if (signal?.aborted) cancel();
+  else signal?.addEventListener("abort", cancel, { once: true });
+  return {
+    signal: controller.signal,
+    expired: () => expired,
+    end: () => {
+      clearTimeout(timer);
+      signal?.removeEventListener("abort", cancel);
+    },
+  };
+}
 
 type Fetcher = (url: string, init?: { signal?: AbortSignal }) => Promise<Response>;
 type Row = Record<string, unknown>;
@@ -63,26 +103,48 @@ const query = (params: Record<string, string>) =>
     .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
     .join("&");
 
+/** One GET to NHTSA's API, tried once more when the connection dropped or the server was busy. */
 async function results(path: string, signal?: AbortSignal, fetcher: Fetcher = fetch): Promise<Row[]> {
-  let response: Response;
   try {
-    response = await fetcher(`${API}${path}`, { signal }); // a plain GET: no headers, no body
+    return await resultsOnce(path, signal, fetcher);
   } catch (error) {
-    if (signal?.aborted) throw error;
-    throw new NhtsaError("Couldn't reach NHTSA. Check your connection and try again.");
+    if (signal?.aborted || !(error instanceof NhtsaError) || !error.retry) throw error;
+    await pause(LIMITS.retryMs, signal);
+    return resultsOnce(path, signal, fetcher);
   }
-  if (!response.ok && response.status !== 400) throw new NhtsaError(`NHTSA's server answered ${response.status}.`);
-  let body: unknown;
+}
+
+async function resultsOnce(path: string, signal: AbortSignal | undefined, fetcher: Fetcher): Promise<Row[]> {
+  const limit = timeLimit(signal, LIMITS.timeoutMs);
+  const lost = (error: unknown) => {
+    if (signal?.aborted) return error;
+    return limit.expired()
+      ? new NhtsaError("NHTSA took too long to answer. Try again in a moment.", true)
+      : new NhtsaError("Couldn't reach NHTSA. Check your connection and try again.", true);
+  };
   try {
-    body = await response.json();
-  } catch (error) {
-    if (signal?.aborted) throw error;
-    throw new NhtsaError("NHTSA sent a reply this page couldn't read.");
+    let response: Response;
+    try {
+      response = await fetcher(`${API}${path}`, { signal: limit.signal }); // a plain GET: no headers, no body
+    } catch (error) {
+      throw lost(error);
+    }
+    const busy = response.status === 429 || response.status >= 500;
+    if (!response.ok && response.status !== 400) throw new NhtsaError(`NHTSA's server answered ${response.status}.`, busy);
+    let body: unknown;
+    try {
+      body = await response.json();
+    } catch (error) {
+      if (signal?.aborted || limit.expired()) throw lost(error);
+      throw new NhtsaError("NHTSA sent a reply this page couldn't read.");
+    }
+    const rows = (body as { results?: unknown; Results?: unknown } | null)?.results ?? (body as { Results?: unknown })?.Results;
+    if (!Array.isArray(rows)) throw new NhtsaError("NHTSA sent a reply this page couldn't read.");
+    if (!response.ok && rows.length) throw new NhtsaError(`NHTSA's server answered ${response.status}.`);
+    return rows.filter((row): row is Row => typeof row === "object" && row !== null);
+  } finally {
+    limit.end();
   }
-  const rows = (body as { results?: unknown; Results?: unknown } | null)?.results ?? (body as { Results?: unknown })?.Results;
-  if (!Array.isArray(rows)) throw new NhtsaError("NHTSA sent a reply this page couldn't read.");
-  if (!response.ok && rows.length) throw new NhtsaError(`NHTSA's server answered ${response.status}.`);
-  return rows.filter((row): row is Row => typeof row === "object" && row !== null);
 }
 
 /** Values from both NHTSA lists (vehicles with complaints, and with recalls), without repeats. */

@@ -9,15 +9,20 @@ train (before 2024), dev (2024), test (2025 onward). Writes:
   docs/answer-key.md                      a readable summary of the above
 
     python scripts/build_answer_key.py
+
+NHTSA updates its files in place, so a later download usually differs from the files the published
+answer key was built from (carsafety.complaints.PUBLISHED_SOURCES). The script then stops before writing
+anything, so the published answer key and test sample, and every score measured on them, stay as they
+are. --replace-published builds from the new download anyway.
 """
 from __future__ import annotations
 
-import hashlib
+import argparse
 import json
 from collections import Counter
 from pathlib import Path
 
-from carsafety.complaints import read_rows, split_by_date, to_complaints
+from carsafety.complaints import changed_sources, read_rows, sha256, split_by_date, to_complaints
 from carsafety.privacy import scrub
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -25,10 +30,6 @@ RAW, PROCESSED, SAMPLE = ROOT / "data" / "raw", ROOT / "data" / "processed", ROO
 SOURCES = ["COMPLAINTS_RECEIVED_2015-2019", "COMPLAINTS_RECEIVED_2020-2024", "COMPLAINTS_RECEIVED_2025-2026"]
 SAMPLE_SIZE, SAMPLE_SEED = 1000, 2026
 COLUMNS = ["id", "received", "make", "model", "model_year", "crash", "fire", "injured", "deaths", "text", "labels"]
-
-
-def sha256(path: Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def write_jsonl(frame, path: Path, clean_text: bool = False) -> None:
@@ -39,7 +40,24 @@ def write_jsonl(frame, path: Path, clean_text: bool = False) -> None:
             out.write(json.dumps(record, ensure_ascii=False) + "\n")
 
 
-def main() -> None:
+STOP = """These files in {raw} aren't the ones the published answer key was built from: {files}.
+NHTSA updates its files in place, so a new download usually differs. Nothing was written: the published
+answer key (docs/answer-key.md) and test sample (data/sample/test_sample.jsonl) stay as they are, so every
+published score can still be checked against them. To build from these files anyway, which replaces both
+and changes the scores a little, run: python scripts/build_answer_key.py --replace-published"""
+
+
+def main(argv: list[str] | None = None) -> None:
+    global RAW
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--raw", type=Path, default=RAW, help="the folder with NHTSA's files (default: data/raw)")
+    parser.add_argument("--replace-published", action="store_true",
+                        help="build from files that differ from the published ones, replacing the published answer key")
+    args = parser.parse_args(argv)
+    RAW = args.raw
+    changed = changed_sources(RAW)
+    if changed and not args.replace_published:
+        raise SystemExit(STOP.format(raw=RAW, files=", ".join(changed)))
     PROCESSED.mkdir(parents=True, exist_ok=True)
     SAMPLE.mkdir(parents=True, exist_ok=True)
     rows = read_rows(RAW / f"{name}.txt" for name in SOURCES)

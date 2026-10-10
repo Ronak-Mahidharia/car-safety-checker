@@ -61,16 +61,19 @@ export function App() {
   );
 
   // Until someone uses the switch, it shows the device's setting, which can change while the page is open.
+  // A choice made here counts even when the browser won't save it (some private windows block storage).
+  const chosen = useRef(false);
   useEffect(() => {
     const media = window.matchMedia(DARK_QUERY);
     const follow = () => {
-      if (!savedTheme(browserStorage())) setTheme(media.matches ? "dark" : "light");
+      if (!chosen.current && !savedTheme(browserStorage())) setTheme(media.matches ? "dark" : "light");
     };
     media.addEventListener("change", follow);
     return () => media.removeEventListener("change", follow);
   }, []);
 
   function toggleTheme() {
+    chosen.current = true;
     const next: Theme = theme === "dark" ? "light" : "dark";
     chooseTheme(next, document.documentElement, document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]'), browserStorage());
     setTheme(next);
@@ -179,7 +182,15 @@ export function App() {
 
   return (
     <>
-      <a className="skip-link" href="#results">
+      <a
+        className="skip-link"
+        href="#results"
+        onClick={(event) => {
+          // Move to the results without changing the address, which keeps the chosen vehicle (#year=...).
+          event.preventDefault();
+          resultsRef.current?.focus();
+        }}
+      >
         Skip to results
       </a>
       <header className="topbar">
@@ -304,7 +315,7 @@ export function App() {
           )}
         </form>
 
-        <section id="results" className="results-panel" ref={resultsRef} aria-label="Results" aria-busy={records.status === "loading"}>
+        <section id="results" className="results-panel" ref={resultsRef} tabIndex={-1} aria-label="Results" aria-busy={records.status === "loading"}>
           <p className="visually-hidden" role="status">
             {status}
           </p>

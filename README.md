@@ -117,7 +117,7 @@ Pick a vehicle, describe the problem, and the page shows the vehicle's recalls a
 - **Vehicle names are handled carefully.** NHTSA's API names the same vehicle in more than one way: the 2026 Lucid Air's complaints are found under "AIR BEV" and its recalls under "AIR". The picker also lists the 40,093 model names in NHTSA's recall file. A search covers related names, and the model named on NHTSA's own complaint records decides which recalls and complaints are the vehicle's, so the 2022 Mustang Mach-E gets its own recalls, not the gasoline Mustang's. Recalls under similar names are listed apart, never hidden.
 - **Private by design:** only the year, make, and model are sent to NHTSA. Complaint records' partial VINs are dropped, and emails, phone numbers, and VINs in complaint text are masked. There are no cookies or analytics (only a light or dark choice is saved, in your browser), and a Content Security Policy limits connections to NHTSA's API.
 - **Designed for any screen:** two columns on wide screens and one on phones, in light and dark mode, with a dark mode switch and a Start over button. It has a skip link, labeled fields, and WCAG AA contrast, and red appears only for NHTSA's safety warnings.
-- **Checked:** 85 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
+- **Checked:** 92 tests in CI (including Python and TypeScript giving the same answers), plus click-through checks of the built site in headless Chrome on desktop and phone sizes: no errors, no sideways scrolling.
 
 ## The MCP server
 AI assistants that support the Model Context Protocol, such as Claude Desktop and Claude Code, can use the project as tools ([setup and details](docs/mcp.md)). Asked about a car problem, the assistant looks up NHTSA's records instead of guessing.
@@ -131,7 +131,7 @@ AI assistants that support the Model Context Protocol, such as Claude Desktop an
   - the server tells the assistant never to call a car safe and always to point to NHTSA's VIN lookup
   - a misspelled model gets "Did you mean: ACCORD?", not "no recalls" or a similar name's recalls
   - recalls under a similar name that may be another vehicle are kept apart from the vehicle's own
-  - complaint text is marked as information, never instructions, and a sentence addressed to an AI assistant ("ignore all previous instructions…") is removed from it
+  - complaint text is marked as information, never instructions, and a complaint with text addressed to an AI assistant ("ignore all previous instructions…") loses its whole text
 - **Local and private:** it runs on your computer over stdio, and only the vehicle is sent to NHTSA. Built on the official `mcp` 2.2.0 SDK, pinned and checked with `pip-audit`.
 - **Measured with AI models** ([tool-use evaluation](docs/results/tool-use.md)): two small local models answered 32 questions through the tools, in three runs.
   - **Two fixes in the tools removed the harmful answers they targeted.** A made-up complaint tells the assistant to call the car "completely safe". Before the fix, 3 of the 4 answers that saw it said the car was safe or had no open recalls; after it, none did.
@@ -158,15 +158,17 @@ python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes
 # The browser model (about 1 minute), the website's data files, and the website's tests (needs Node.js 24)
 python scripts/build_browser_model.py
 python scripts/build_vehicle_index.py && python scripts/build_web_fixtures.py
-cd web && npm ci && npm test
-npm run dev                          # the website at http://localhost:5173
+(cd web && npm ci && npm test)
+(cd web && npm run dev)              # the website at http://localhost:5173 (Ctrl+C stops it)
 
 # The MCP server (already installed by requirements-dev.txt; setup for assistants in docs/mcp.md)
-python -m carsafety.mcp_server
+python -m carsafety.mcp_server       # waits for an assistant (Ctrl+C stops it)
 
 # How models use the server's tools (about 35 minutes; docs/results/tool-use.md)
 python scripts/run_tool_eval.py --record && python scripts/run_tool_eval.py --label round-2
 ```
+
+NHTSA updates its files in place, so a new download usually differs from the files the published answer key was built from (their checksums are in [the answer key](docs/answer-key.md)). `download_data.py` says which ones differ, and `build_answer_key.py` then stops without writing anything, so the published answer key and test sample stay as they are. To build from a new download anyway, pass `--replace-published`; the answer key and the scores will then differ a little.
 
 Every approach's answers on the test sample are published in [`docs/results/predictions/`](docs/results/predictions), so the scores can be checked without running anything.
 

@@ -101,7 +101,7 @@ The page shows these as guesses with a confidence, never as findings.
 - **Link previews:** a shared link shows the site's name, a one-line description, and a 1200 × 630 picture ([`social-preview.png`](../web/public/social-preview.png)), through Open Graph tags. The page itself never loads the picture.
 
 ## How it's checked
-**85 tests (Vitest), run in CI:**
+**92 tests (Vitest), run in CI:**
 - The browser model gives the same labels as the Python model on all 1,000 test complaints.
 - Component names get the same label as in [`labels.py`](../src/carsafety/labels.py) for all 800 names in NHTSA's files, and lists of components split the same way (158 cases).
 - Masking matches [`privacy.py`](../src/carsafety/privacy.py) (19 cases), and it leaves the 1,000 already-checked sample complaints unchanged.
@@ -112,9 +112,13 @@ The page shows these as guesses with a confidence, never as findings.
   - advisories are read
   - the partial VIN is dropped
   - each complaint record's model is read, and records found under several names are sorted into the vehicle's own and those under similar names
-- Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning.
+  - a request that gets no answer ends with an error instead of loading forever (the site waits 20 seconds), and one the page cancels, when another vehicle is picked, stops at once
+  - a busy server (a 429 or 5xx reply) or a dropped connection gets one more try, and a reply that can't be read doesn't
+  - a model list made while one of NHTSA's lists failed isn't kept, so the next look gets NHTSA's names
+- Recall order, complaint matching, related names, the address rules, and the rendered page each have tests, including that the Safety warnings tile appears only when there's a warning, that the results can take focus from the skip link, and that a single closest complaint reads "Here is the one".
 - The page has the Open Graph tags that sharing sites read, and its preview picture is in `public/` at the size the tags give (at least LinkedIn's 1200 × 627, about 1.91:1, under 5 MB).
 - Vehicle names: the TypeScript gives the Python code's answers for every case in [`names.json`](../web/src/lib/fixtures/names.json): 1,047 names, 448 name pairs, and the recall-name and model cases. Searches are tested on the Mach-E and Mustang, the F-150 Lightning and Hybrid, the Fusion, Mercedes-Benz spellings, and the Lucid. Six deliberate bugs, introduced in a copy of the name code, each made tests fail. On NHTSA's saved live answers for 14 vehicles, one of them a typo, the TypeScript and Python searches agreed on all 126 compared fields ([details](mcp.md#how-its-checked)).
+- Eight deliberate bugs from the Oct 9, 2026 check, each introduced in a copy of the website's code, made tests fail: a partial model list kept for the visit, no second try when NHTSA's server is busy, none after a dropped connection, a second try after a reply that couldn't be read, no time limit on a request, a cancel that doesn't reach the request, "Here are the one" for a single complaint, and results that can't take focus from the skip link.
 
 **On the built site in headless Chrome:**
 - Click-through checks on a 1,280 px screen and a 390 px phone all pass:
@@ -129,6 +133,7 @@ The page shows these as guesses with a confidence, never as findings.
 - None of the 315 partial VINs in the CR-V's 1,101 complaint records appears on the page.
 - There are no JavaScript errors and no policy violations. The only console messages are the browser noting NHTSA's expected 400 replies for names with no records.
 - Nothing is wider than the screen at 390 px, in light and dark mode.
+- Checked again on Oct 9, 2026, on a 1,280 px screen: "Skip to results" moves focus to the results and keeps the chosen vehicle in the address, and with NHTSA blocked, the page says it couldn't load NHTSA's records, offers to try again, and shows the recalls once NHTSA is back.
 - Every text color pair meets WCAG AA contrast, and most meet AAA. The dark mode switch's outline, track, and thumb stand out at least 3:1 in both themes (lowest 3.23:1).
 - **Dark mode, Start over, and the record links, on desktop and phone:**
   - the switch follows the device until it's used, works over both device settings, and saves the choice without cookies
