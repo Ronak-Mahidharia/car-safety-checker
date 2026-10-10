@@ -69,7 +69,7 @@ The first run found real problems:
 
 I tried two kinds of fixes, one at a time:
 - **Firmer instructions** improved the questions they were written for (qwen3 from 9 to 11 of 16, granite from 7 to 10) but not the held-out ones (10 to 9, and 11 to 9). I took them back.
-- **Fixes in the tools** worked. With the original instructions, word for word, a misspelled name gets "Did you mean" instead of another car's recalls, and a complaint sentence addressed to an AI assistant is removed before the assistant sees it. Before, 3 of the 4 answers that saw the made-up complaint said the car was safe or had no open recalls. After, none did. The filter changes none of the 784,818 real complaints NHTSA received from 2015 to 2026.
+- **Fixes in the tools** worked. With the original instructions, word for word, a misspelled name gets "Did you mean" instead of another car's recalls, and a complaint sentence addressed to an AI assistant is removed before the assistant sees it. Before, 3 of the 4 answers that saw the made-up complaint said the car was safe or had no open recalls. After, none did. The filter changes none of the 784,818 real complaints NHTSA received from 2015 to 2026. A later check (Oct 9, 2026) found that the next sentence could still carry the message, so a complaint with such wording now loses its whole text, and more wordings are caught; that still changes none of the real complaints.
 
 The number of answers that passed every check didn't change: 19 of 32 for qwen3 and 18 for granite. The answers the fixes changed now fail by leaving something out, such as not saying that complaints are unverified, instead of by saying something false. I'd rather report that than a better-looking number.
 
@@ -80,7 +80,7 @@ I also checked the checks. After the last run, I listed the phrase behind every 
 - **Try a larger model** on the tool-use questions. The two small models here still told owners their car "has four open recalls", which the tools can't know.
 
 ## How it's checked
-- 101 Python tests and 85 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
+- 105 Python tests and 92 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
 - Python and TypeScript are tested against each other wherever they share logic: labels, masking, the browser model, and vehicle names.
 - Every approach's answers on the test sample, and every model answer in the tool-use evaluation, are published, so each score can be checked without running anything.
 - All models run locally through Ollama, so the whole project costs $0 to run.

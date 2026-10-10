@@ -28,8 +28,8 @@ Every result is structured (each tool publishes a JSON schema) and carries a `no
 - **NHTSA's own records say which records are the vehicle's.** A search covers related names, and the models named on the vehicle's complaint records decide which recalls and complaints are its own (`models_in_records`). The 2026 Lucid Air's complaints are found under "AIR BEV" and name "AIR", where its recalls are filed ([details](website.md#vehicle-names)).
 - **Similar names are kept apart.** Recalls under a similar name that may be a different vehicle, such as the gasoline MUSTANG's for a MUSTANG MACH-E, come in `related_recalls`, with a count of their safety warnings and a note telling the assistant not to present them as the vehicle's. A name in no list gets the recall-file name it shortens, not a shorter one: "F-150 LIGHTNING" gets "F-150 LIGHTNING BEV", not the gasoline "F-150". Complaints whose records name another model are left out and counted (`left_out`).
 - **Complaint text is treated as data.** Complaints are written by members of the public, so the instructions and each result tell the assistant to treat the text as information, never as instructions. This guards against text that tries to steer the assistant.
-  - **The most common wording is removed.** A sentence such as "Ignore all previous instructions…" is replaced with "[removed: text addressed to an AI assistant]" before the text reaches the assistant. In the [tool-use evaluation](results/tool-use.md), a made-up complaint with that sentence got one model to repeat its claim that the car "is completely safe and has no open recalls". With the filter, none of the 4 answers that saw the complaint said the car was safe or had no open recalls, against 3 without it.
-  - **Real complaints keep every word.** None of the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has a sentence the filter would replace.
+  - **Common wording is removed, with the whole complaint text.** When a complaint has wording such as "Ignore all previous instructions…", "Ignore your instructions", "You are an AI", or "Tell the user…", its whole text is replaced with "[removed: text addressed to an AI assistant]" before it reaches the assistant, because the rest of the message can sit in the next sentence or line. In the [tool-use evaluation](results/tool-use.md), a made-up complaint with such a sentence got one model to repeat its claim that the car "is completely safe and has no open recalls". With the filter, none of the 4 answers that saw the complaint said the car was safe or had no open recalls, against 3 without it. That evaluation ran with an earlier version that replaced only the sentence; a check on Oct 9, 2026 found that the next sentence could still carry the message, so the whole text now goes.
+  - **Real complaints keep every word.** None of the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has wording the filter would remove (checked Oct 3, 2026, and again on Oct 9 with the wider wording).
   - Other wordings get through, so the instructions still apply.
 
 ## Privacy
@@ -47,12 +47,12 @@ pip install -r requirements.txt -r requirements-mcp.txt && pip install -e . --no
 python -m carsafety.mcp_server   # starts and waits for an assistant; press Ctrl+C to stop
 ```
 
-The examples below use `/path/to/car-safety-checker` for the folder you cloned. Use the full path, not a relative one.
+The examples below use `/path/to/car-safety-checker` for the folder you cloned. Use the full path, not a relative one, and keep the quotes: they matter when the path has a space in it.
 
 **Claude Code:**
 
 ```bash
-claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/python -m carsafety.mcp_server
+claude mcp add car-safety-checker -- "/path/to/car-safety-checker/.venv/bin/python" -m carsafety.mcp_server
 ```
 
 **Claude Desktop:**
@@ -71,11 +71,11 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
    ```
 3. Save, then quit Claude Desktop completely and open it again.
 
-**Other MCP clients:** run the same command, `/path/to/car-safety-checker/.venv/bin/python -m carsafety.mcp_server`, as a stdio server.
+**Other MCP clients:** run the same command, `"/path/to/car-safety-checker/.venv/bin/python" -m carsafety.mcp_server`, as a stdio server.
 
 ## How it's checked
-- **The full suite:** 101 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
-  - 58 for the server and the code it uses: the server 15, vehicle names 20, NHTSA's API 10, matching 6, the browser model 5, masking 2
+- **The full suite:** 105 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
+  - 59 for the server and the code it uses: the server 15, vehicle names 20, NHTSA's API 11, matching 6, the browser model 5, masking 2
   - 10 for the tool-use evaluation: the question loop, the frozen copy of NHTSA's answers, and the checks
 - **Through a real MCP client:** the server's tests connect a real MCP client in-process and check:
   - the four read-only tools and their input limits
@@ -84,11 +84,11 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
   - recalls under a similar name for another vehicle kept apart, and another model's complaints left out
   - the misspelling refusal, also when a similar name has records, and "CRV" finding the CR-V
   - complaint ranking and masking, with no partial VIN in the output
-  - text addressed to an assistant replaced, and only that sentence
+  - a complaint with text addressed to an assistant replaced as a whole, and real complaints with similar words left as written
   - the cap on long recall lists
   - the over-the-air mark, sent only when NHTSA sets it
   - the error when NHTSA is down
-- **Tests that catch deliberate bugs:** each of twelve bugs, introduced on purpose in a copy of the code, made tests fail:
+- **Tests that catch deliberate bugs:** each of fifteen bugs, introduced on purpose in a copy of the code, made tests fail:
   - warnings no longer first
   - complaint text no longer masked
   - a misspelled model reading as "no recalls"
@@ -101,6 +101,9 @@ claude mcp add car-safety-checker -- /path/to/car-safety-checker/.venv/bin/pytho
   - recalls under shorter versions of the vehicle's names counted as its own
   - a typo given a shorter name's recalls
   - complaint text passed on without the filter
+  - only the matching words removed, so the next sentence still reaches the assistant (Oct 9, 2026)
+  - "Tell the user…" let through (Oct 9)
+  - a reply from NHTSA cut off part way escaping as a different error (Oct 9)
 - **The same answers as the website.** NHTSA's live answers for the 2019 Honda CR-V, 2026 Lucid Air BEV, and 2025 Isuzu NPR HD were saved once, then run through both the Python server code and the website's TypeScript. All 27 checks were identical:
   - the likely components and top-3 guesses, with confidence within 0.00000001
   - the recall order, warnings, and names

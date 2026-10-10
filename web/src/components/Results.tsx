@@ -166,8 +166,8 @@ export function Results({ vehicle, names, models, recalls, relatedRecalls, compl
           <>
             <p className="section-note">
               {plural(matches.filedUnder, "complaint", "complaints")} about the {name} {matches.filedUnder === 1 ? "was" : "were"} filed
-              under {analysis.labels.length === 1 ? "this component" : "these components"}. Here are the{" "}
-              {matches.shown.length === 1 ? "one" : number.format(matches.shown.length)} with the wording closest to yours. Complaints
+              under {analysis.labels.length === 1 ? "this component" : "these components"}.{" "}
+              {matches.shown.length === 1 ? "Here is the one" : `Here are the ${number.format(matches.shown.length)}`} with the wording closest to yours. Complaints
               are reports from owners; NHTSA hasn't verified them.
             </p>
             <ol className="cards">

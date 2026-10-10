@@ -62,21 +62,25 @@ export function recallNames(year: string, fetcher: Fetcher = fetch): Promise<Yea
   return file;
 }
 
-/** Names from both sources, in capitals and without repeats. Either source is enough if the other fails. */
-async function combine(sources: Promise<string[]>[]): Promise<string[]> {
+/**
+ * Names from both sources, in capitals and without repeats. Either source is enough if the other fails;
+ * `complete` says whether both answered.
+ */
+async function combine(sources: Promise<string[]>[]): Promise<{ names: string[]; complete: boolean }> {
   const settled = await Promise.allSettled(sources);
   const found = settled.flatMap((s) => (s.status === "fulfilled" ? [s.value] : []));
   if (!found.length) throw (settled[0] as PromiseRejectedResult).reason;
-  return [...new Set(found.flat().map((name) => name.trim().toUpperCase()).filter(Boolean))];
+  const names = [...new Set(found.flat().map((name) => name.trim().toUpperCase()).filter(Boolean))];
+  return { names, complete: found.length === settled.length };
 }
 
 export async function vehicleYears(signal?: AbortSignal): Promise<string[]> {
-  const years = await combine([listedYears(signal), recallYears()]);
-  return years.sort((a, b) => Number(b) - Number(a));
+  const { names } = await combine([listedYears(signal), recallYears()]);
+  return names.sort((a, b) => Number(b) - Number(a));
 }
 
 export async function vehicleMakes(year: string, signal?: AbortSignal): Promise<string[]> {
-  return (await combine([listedMakes(year, signal), recallNames(year).then(Object.keys)])).sort();
+  return (await combine([listedMakes(year, signal), recallNames(year).then(Object.keys)])).names.sort();
 }
 
 const modelLists = new Map<string, string[]>();
@@ -85,8 +89,11 @@ export async function vehicleModels(year: string, make: string, signal?: AbortSi
   const key = `${year}|${make}`;
   const known = modelLists.get(key);
   if (known) return known;
-  const models = (await combine([listedModels(year, make, signal), recallNames(year).then((file) => file[make] ?? [])])).sort();
-  modelLists.set(key, models);
+  const { names, complete } = await combine([listedModels(year, make, signal), recallNames(year).then((file) => file[make] ?? [])]);
+  const models = names.sort();
+  // A list made while NHTSA's list failed or was cancelled lacks the names only NHTSA has (AIR BEV, MUSTANG
+  // MACH-E), and complaints are found only under those, so it isn't kept: the next look asks again.
+  if (complete) modelLists.set(key, models);
   return models;
 }
 

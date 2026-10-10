@@ -44,13 +44,19 @@ COMPLAINT_NOTE = ("Owner complaints are reports from the public that NHTSA hasn'
 RELATED_NOTE = ("related_recalls are filed under a similar model name that may be a different vehicle (for example, "
                 "the gasoline MUSTANG for a MUSTANG MACH-E). Don't present them as this vehicle's recalls. Mention any "
                 "Do Not Drive or Park Outside warnings among them, and suggest checking the VIN.")
-# Anyone can file a complaint with NHTSA, so its text could try to steer an AI assistant. A sentence with the most
-# common wording ("ignore all previous instructions") is replaced before the text reaches the assistant. None of
-# the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has one (checked Oct 3, 2026), so
-# real complaints keep every word. Other wordings get through, so the instructions still say to treat the text as data.
-STEERING = re.compile(r"\b(?:ignore|disregard|forget)\s+(?:all\s+|any\s+|the\s+|your\s+|of\s+)*(?:previous|prior|above|earlier|preceding|other)\s+"
-                      r"(?:instructions?|prompts?|messages?|rules|directions)\b", re.I)
-SENTENCE = re.compile(r"[^.!?\n]+[.!?]*|[.!?\n]+")  # every character falls in one piece, so the pieces rebuild the text
+# Anyone can file a complaint with NHTSA, so its text could try to steer an AI assistant. A complaint with common
+# wording for that ("ignore all previous instructions", "ignore your instructions", "you are an AI", "tell the user")
+# loses its whole text before it reaches the assistant, because the rest of the message can sit in the next sentence
+# or line. None of the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has such wording
+# (checked Oct 3, 2026, and again on Oct 9 with the wider wording), so real complaints keep every word. Other wordings
+# get through, so the instructions still say to treat the text as data.
+_WORDS = r"(?:all|any|the|your|my|of|these|those|previous|prior|above|earlier|preceding|other|system|original)"
+STEERING = re.compile(
+    r"\b(?:ignore|disregard|forget)\s+(?:all\s+|any\s+|the\s+|your\s+|of\s+)*(?:previous|prior|above|earlier|preceding|other)\s+"
+    r"(?:instructions?|prompts?|messages?|rules|directions)\b"
+    rf"|\b(?:ignore|disregard)\s+(?:{_WORDS}\s+)*(?:instructions?|prompts?)\b"
+    r"|\b(?:you are|as) an? (?:AI|artificial intelligence)\b"
+    r"|\btell (?:the )?users?\b", re.I)
 REMOVED = "[removed: text addressed to an AI assistant]"
 MODEL_NOTE = ("Guesses from a keyword model trained on 200,000 past complaints, with a confidence from 0 to 1. On 1,000 "
               "complaints received in 2025 and 2026, its top guess was one of the components NHTSA recorded 83% of the time.")
@@ -209,10 +215,8 @@ def check_name(vehicle: nhtsa.Vehicle, listed: list[str]) -> None:
 
 
 def without_steering(text: str) -> str:
-    """The complaint text, with any sentence that tries to steer an AI assistant replaced (see STEERING)."""
-    if not STEERING.search(text):
-        return text
-    return "".join(f" {REMOVED}" if STEERING.search(piece) else piece for piece in SENTENCE.findall(text)).strip()
+    """The complaint text, or a note in its place when any of it tries to steer an AI assistant (see STEERING)."""
+    return REMOVED if STEERING.search(text) else text
 
 
 def recall_item(s: ShownRecall) -> RecallItem:

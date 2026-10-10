@@ -1,7 +1,15 @@
 // The API client, tested against a stand-in for NHTSA's server. The recall rows are shortened copies
 // of real public records (checked Oct 2, 2026); the complaint rows are made up.
-import { describe, expect, it } from "vitest";
-import { API, complaints, makes, modelYears, models, NhtsaError, RECORD_PAGE, recalls, recordModel, type Vehicle } from "./nhtsa";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { API, complaints, LIMITS, makes, modelYears, models, NhtsaError, RECORD_PAGE, recalls, recordModel, type Vehicle } from "./nhtsa";
+
+const pause = LIMITS.retryMs;
+beforeAll(() => {
+  LIMITS.retryMs = 0; // the one retry happens at once in tests
+});
+afterAll(() => {
+  LIMITS.retryMs = pause;
+});
 
 type Route = { status?: number; body: unknown };
 
@@ -39,7 +47,66 @@ describe("requests", () => {
     });
     await modelYears(undefined, fetcher);
     expect(calls).toHaveLength(2);
-    for (const { init } of calls) expect(Object.entries(init ?? {}).filter(([, value]) => value !== undefined)).toEqual([]);
+    // Only a signal (the time limit), which never leaves the browser: no headers, method, or body.
+    for (const { init } of calls) expect(Object.keys(init ?? {}).filter((key) => init?.[key] !== undefined)).toEqual(["signal"]);
+  });
+
+  it("try once more when NHTSA's server is busy or the connection drops, and give up after that", async () => {
+    let answers = [503, 200];
+    const calls: string[] = [];
+    const fetcher = async (url: string) => {
+      calls.push(url);
+      return new Response(JSON.stringify({ results: [] }), { status: answers.shift() ?? 503 });
+    };
+    expect(await recalls({ year: "2019", make: "HONDA", model: "CR-V" }, undefined, fetcher)).toEqual([]);
+    expect(calls).toHaveLength(2); // busy once, then answered
+    answers = [503, 503];
+    calls.length = 0;
+    await expect(recalls({ year: "2019", make: "HONDA", model: "CR-V" }, undefined, fetcher)).rejects.toThrow("NHTSA's server answered 503.");
+    expect(calls).toHaveLength(2);
+    calls.length = 0;
+    const dropsOnce = async (url: string) => {
+      calls.push(url);
+      if (calls.length === 1) throw new TypeError("Failed to fetch");
+      return new Response(JSON.stringify({ results: [] }));
+    };
+    expect(await recalls({ year: "2019", make: "HONDA", model: "CR-V" }, undefined, dropsOnce)).toEqual([]);
+    expect(calls).toHaveLength(2); // the connection dropped once, then NHTSA answered
+  });
+
+  it("don't try again after an answer that couldn't be read", async () => {
+    const calls: string[] = [];
+    const fetcher = async (url: string) => (calls.push(url), new Response("not json", { status: 200 }));
+    await expect(recalls({ year: "2019", make: "HONDA", model: "CR-V" }, undefined, fetcher)).rejects.toThrow("couldn't read");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("stop at once when the page cancels a request, without trying again", async () => {
+    // The page cancels a request when another vehicle is picked. Like fetch, the fake ends when its signal is aborted.
+    const calls: string[] = [];
+    const hang = (url: string, init?: { signal?: AbortSignal }) => {
+      calls.push(url);
+      const signal = init?.signal;
+      if (signal?.aborted) return Promise.reject(signal.reason);
+      return new Promise<Response>((_, reject) => signal?.addEventListener("abort", () => reject(signal.reason)));
+    };
+    const controller = new AbortController();
+    const request = recalls({ year: "2019", make: "HONDA", model: "CR-V" }, controller.signal, hang);
+    controller.abort();
+    await expect(request).rejects.toHaveProperty("name", "AbortError");
+    expect(calls).toHaveLength(1);
+  });
+
+  it("end a request that never answers with an error, instead of loading forever", async () => {
+    const saved = LIMITS.timeoutMs;
+    LIMITS.timeoutMs = 30;
+    try {
+      const hang = (_url: string, init?: { signal?: AbortSignal }) =>
+        new Promise<Response>((_, reject) => init?.signal?.addEventListener("abort", () => reject(init.signal?.reason)));
+      await expect(recalls({ year: "2019", make: "HONDA", model: "CR-V" }, undefined, hang)).rejects.toThrow("took too long");
+    } finally {
+      LIMITS.timeoutMs = saved;
+    }
   });
 
   it("encode spaces and symbols in names", async () => {

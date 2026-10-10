@@ -8,12 +8,35 @@ the dealer's details, the vehicle operator's name, and the incident state) are n
 from __future__ import annotations
 
 import csv
+import hashlib
 from pathlib import Path
 from typing import Iterable
 
 import pandas as pd
 
 from .labels import normalize
+
+# The complaint files the published answer key was built from (downloaded Sept 30, 2026; docs/answer-key.md).
+# NHTSA updates these files in place, so a later download usually differs, and a new answer key built from it
+# would replace the published test sample. build_answer_key.py checks against these first.
+PUBLISHED_SOURCES = {
+    "COMPLAINTS_RECEIVED_2015-2019.zip": "d8d95b377ad5e40f014c83030102f5c43b4cd7c0f804d4a66d4b6f4239e94f60",
+    "COMPLAINTS_RECEIVED_2020-2024.zip": "e61028e5b509ffcd52f12a6520f0e17084a20bf1c120992e862a79055884a3e6",
+    "COMPLAINTS_RECEIVED_2025-2026.zip": "ce30bdc24c6a90a2aabd3333b8fbc189ee23745b874c84ab0fa80e3bf4302fa4",
+}
+
+
+def sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def changed_sources(raw: Path) -> list[str]:
+    """The published answer key's complaint files that are missing from raw/ or differ from the published ones."""
+    return [name for name, digest in PUBLISHED_SOURCES.items() if not (raw / name).is_file() or sha256(raw / name) != digest]
 
 FIELDS = (
     "CMPLID ODINO MFR_NAME MAKETXT MODELTXT YEARTXT CRASH FAILDATE FIRE INJURED DEATHS COMPDESC "
