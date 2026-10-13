@@ -1,0 +1,39 @@
+{
+ "source": "TSBS_RECEIVED_2025-2026.zip",
+ "sha256": "3002a198debb0f6c91268cdee7e2d940084548514b845462d1dc3fb14a5296ed",
+ "bytes": 12476918,
+ "communications": 23164,
+ "distinct_summaries": 18194,
+ "test_from": "20260101",
+ "seed": 2026,
+ "per_type": {
+  "dev": 20,
+  "test": 50
+ },
+ "pool": {
+  "dev": {
+   "Service Bulletin/Repair Instructions": 7608,
+   "Service Campaign": 1073,
+   "Warranty Program/Extension": 171,
+   "Over The Air": 397,
+   "Emissions": 115,
+   "Other": 1243
+  },
+  "test": {
+   "Service Bulletin/Repair Instructions": 5271,
+   "Service Campaign": 587,
+   "Warranty Program/Extension": 281,
+   "Over The Air": 407,
+   "Emissions": 101,
+   "Other": 940
+  }
+ },
+ "types_in_file": {
+  "Service Bulletin/Repair Instructions": 15976,
+  "Other": 3036,
+  "Service Campaign": 2067,
+  "Over The Air": 1236,
+  "Warranty Program/Extension": 574,
+  "Emissions": 275
+ }
+}

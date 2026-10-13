@@ -1,8 +1,9 @@
-"""Download NHTSA's complaint files (received 2015 onward) and the recalls file.
+"""Download NHTSA's complaint files (received 2015 onward), the recalls file, and the file of manufacturer
+communications (service bulletins and the like) NHTSA received in 2025 and 2026.
 
 Saves them to data/raw/, checks each zip is intact, unzips it, and prints its SHA-256
-so results can be tied to an exact version of the data, saying whether each complaint file
-is the one the published answer key was built from. NHTSA updates its files in place, so a
+so results can be tied to an exact version of the data, saying whether each complaint or bulletin
+file is the one the published answer keys were built from. NHTSA updates its files in place, so a
 later download usually differs. Skips files already present unless --force is given.
 
     python scripts/download_data.py
@@ -15,7 +16,8 @@ import urllib.request
 import zipfile
 from pathlib import Path
 
-from carsafety.complaints import PUBLISHED_SOURCES, sha256
+from carsafety import bulletins, complaints
+from carsafety.complaints import sha256
 
 BASE = "https://static.nhtsa.gov/odi/ffdd"
 FILES = [
@@ -23,7 +25,9 @@ FILES = [
     "cmpl/COMPLAINTS_RECEIVED_2020-2024.zip",
     "cmpl/COMPLAINTS_RECEIVED_2025-2026.zip",
     "rcl/FLAT_RCL_POST_2010.zip",
+    f"tsbs/{bulletins.FILE}",
 ]
+PUBLISHED_SOURCES = complaints.PUBLISHED_SOURCES | bulletins.PUBLISHED_SOURCES
 RAW = Path(__file__).resolve().parent.parent / "data" / "raw"
 
 

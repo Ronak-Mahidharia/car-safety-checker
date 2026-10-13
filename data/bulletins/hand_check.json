@@ -1,0 +1,246 @@
+{
+ "model": "qwen3:8b",
+ "rule": "Written before judging, from the form's own definitions. Each form as shown, after the evidence check. Symptom: right when it says, in plain words, what the summary says a driver may notice; wrong when it isn't that (not in the summary, or something only a technician sees); rightly empty when the summary says nothing a driver notices; wrongly empty when it does and the form shows nothing. Fix: right when its kind fits the remedy the summary states; wrong when it doesn't; rightly empty (not stated) when the summary states no remedy; wrongly empty when it does and the form shows not stated. Read one by one by Claude, Oct 13, 2026.",
+ "bulletins": [
+  {
+   "id": "11026899",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "emissions compliance, nothing a driver notices; the fix is an ECM software update"
+  },
+  {
+   "id": "11027015",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "\"Gasket Return\": no problem or remedy described"
+  },
+  {
+   "id": "11027152",
+   "symptom": "right",
+   "fix": "right",
+   "why": "a visible line on the rear roof cover (the summary's own garbled words); no parts to replace"
+  },
+  {
+   "id": "11028585",
+   "symptom": "right",
+   "fix": "right",
+   "why": "refrigerant loss; a workshop note about misdiagnosis, information only"
+  },
+  {
+   "id": "11028628",
+   "symptom": "right",
+   "fix": "wrong",
+   "why": "inoperable horn; the summary extends the warranty and doesn't say the repair, so not stated, not information only"
+  },
+  {
+   "id": "11028790",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "a campaign completion sticker: information only"
+  },
+  {
+   "id": "11028962",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "release notes, no problem described; an over-the-air software update"
+  },
+  {
+   "id": "11028984",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "may not meet emission standards, nothing a driver notices; no remedy stated"
+  },
+  {
+   "id": "11029116",
+   "symptom": "rightly empty",
+   "fix": "wrongly empty",
+   "why": "re-programming a control unit is a software update; the model said so, but its quote wasn't in the summary, so it was hidden"
+  },
+  {
+   "id": "11029296",
+   "symptom": "rightly empty",
+   "fix": "wrong",
+   "why": "an over-the-air update adding remote lockdown: a software update, not information only"
+  },
+  {
+   "id": "11029598",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "a fault with the 48-volt system, no symptom or remedy described"
+  },
+  {
+   "id": "11031113",
+   "symptom": "right",
+   "fix": "rightly empty",
+   "why": "software updates over the air fail to complete; no remedy stated (the model's made-up fix was hidden)"
+  },
+  {
+   "id": "11031382",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "release notes; a software update"
+  },
+  {
+   "id": "11031763",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "release notes, no problem described; a software update"
+  },
+  {
+   "id": "11031854",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "emissions calibration, nothing a driver notices; an ECM software update"
+  },
+  {
+   "id": "11032479",
+   "symptom": "right",
+   "fix": "right",
+   "why": "the Shift System Malfunction message; the actuator ECU's logic was changed (software)"
+  },
+  {
+   "id": "11032590",
+   "symptom": "wrongly empty",
+   "fix": "right",
+   "why": "the summary says over-the-air updates may fail; a software update for the CCU"
+  },
+  {
+   "id": "11033221",
+   "symptom": "right",
+   "fix": "right",
+   "why": "the battery labels' QR codes don't show the battery information; new labels attached"
+  },
+  {
+   "id": "11033375",
+   "symptom": "wrongly empty",
+   "fix": "right",
+   "why": "the headlamp heaters may not work without a relay and fuses; installing them is a repair"
+  },
+  {
+   "id": "11033522",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "bonding issues at the roof corners, no symptom stated; inspect and re-bond"
+  },
+  {
+   "id": "11033989",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "a reimbursement form; no remedy stated (the model's made-up fix was hidden)"
+  },
+  {
+   "id": "11034125",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "emissions, nothing a driver notices; updated software"
+  },
+  {
+   "id": "11034230",
+   "symptom": "rightly empty",
+   "fix": "wrong",
+   "why": "the remedy is PCM programming and installing a sensor, not a repair or adjustment"
+  },
+  {
+   "id": "11034508",
+   "symptom": "wrong",
+   "fix": "rightly empty",
+   "why": "a radar unit dropping out during a technician's connected test drive is not what a driver notices; no remedy stated"
+  },
+  {
+   "id": "11034535",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "a warranty letter about missing bolts; no symptom or remedy described"
+  },
+  {
+   "id": "11034781",
+   "symptom": "right",
+   "fix": "right",
+   "why": "false front park assist alerts; install the factory lighting"
+  },
+  {
+   "id": "11035088",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "release notes; a software update"
+  },
+  {
+   "id": "11035410",
+   "symptom": "right",
+   "fix": "right",
+   "why": "warning lights on the cluster; replace the front view camera"
+  },
+  {
+   "id": "11035659",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "an assembly error, no symptom; corrected at no charge"
+  },
+  {
+   "id": "11035958",
+   "symptom": "right",
+   "fix": "rightly empty",
+   "why": "the odometer shows the wrong mileage; no remedy stated"
+  },
+  {
+   "id": "11036184",
+   "symptom": "wrong",
+   "fix": "rightly empty",
+   "why": "exceeding NOx limits is not something a driver notices; no remedy stated"
+  },
+  {
+   "id": "11036774",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "a dealer incentive; nothing to judge"
+  },
+  {
+   "id": "11037089",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "no symptom stated; replacing the roof module's seal"
+  },
+  {
+   "id": "11037209",
+   "symptom": "right",
+   "fix": "right",
+   "why": "a noise from the front end; diagnostics before replacing the steering rack"
+  },
+  {
+   "id": "11037392",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "a campaign completion sticker: information only"
+  },
+  {
+   "id": "11037617",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "no symptom stated; covered repairs of the HVAC blower motor"
+  },
+  {
+   "id": "11037740",
+   "symptom": "right",
+   "fix": "right",
+   "why": "the sunroof operation anomaly (one of three stated); a software update over the air"
+  },
+  {
+   "id": "11037749",
+   "symptom": "rightly empty",
+   "fix": "right",
+   "why": "release notes; a software update"
+  },
+  {
+   "id": "11038235",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "contact information"
+  },
+  {
+   "id": "11038290",
+   "symptom": "rightly empty",
+   "fix": "rightly empty",
+   "why": "an owner letter's title"
+  }
+ ]
+}
