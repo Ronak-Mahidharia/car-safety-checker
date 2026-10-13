@@ -31,6 +31,9 @@ ROLE = ("You are Car Safety Checker, an assistant that looks up U.S. vehicle rec
         "If a request is about anything else, say briefly that you can only help with vehicle recalls and complaints, "
         "and don't call any tools.")
 MAX_STEPS = 6
+# The tools the published evaluation was measured with. The server has more since (service_bulletins), but a model
+# offered different tools could answer differently, so the evaluation keeps offering these.
+MEASURED_TOOLS = ("vehicle_models", "guess_components", "vehicle_recalls", "similar_complaints")
 VEHICLE_TOOLS = ("vehicle_recalls", "similar_complaints")
 
 # (messages, tools) -> the model's reply: {"message": {"content", "tool_calls"}, "prompt_eval_count", "eval_count"}
@@ -71,7 +74,7 @@ def result_text(result) -> str:
 
 async def ask(question: str, chat: Chat, client, system: str, max_steps: int = MAX_STEPS) -> Answer:
     """One question: the model, the tools it asks for, and its final answer."""
-    tools = tool_specs((await client.list_tools()).tools)
+    tools = tool_specs([t for t in (await client.list_tools()).tools if t.name in MEASURED_TOOLS])
     messages: list[dict] = [{"role": "system", "content": system}, {"role": "user", "content": question}]
     answer = Answer()
     start = time.perf_counter()

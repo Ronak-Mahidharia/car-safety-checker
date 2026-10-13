@@ -90,12 +90,17 @@ The number of answers that passed every check didn't change: 19 of 32 for qwen3 
 
 I also checked the checks. After the last run, I listed the phrase behind every passing answer and read them all. Three rules were wrong. "One owner reported that…" had counted as saying complaints are unverified, and "let me know your VIN and I can look that up" had counted as pointing to NHTSA's lookup. I fixed each rule, scored all three runs again, and published the corrected numbers.
 
+## Reading manufacturers' bulletins, with quotes
+Manufacturers send dealers service bulletins, and some extend a warranty. NHTSA publishes them, along with its own coding of each one: its type, model years, and components. That coding is an answer key I didn't have to make, so I could measure a model that reads a bulletin's summary and fills in a form for a driver.
+
+The rule I cared most about: every field must quote the summary, and a field whose quote isn't there isn't shown. On the 300 test bulletins, that check hid 23.1% of what `qwen3:8b` filled in, including every model year it gave for the 15 summaries that name no year. On warranty extensions, the model's F1 was about the same as a plain search for "warranty" (0.714 against 0.716), but its precision over the real mix of bulletins was much higher (an estimated 71.2% against 37.7%), because the search also flags bulletins that only say a repair is covered by the usual warranty. It was poor at components (0.196 micro F1, against 0.584 for the keyword model), so the new MCP tool uses NHTSA's own coding and points out warranty extensions from NHTSA's type.
+
 ## What I'd do next
 - **Measure retrieval directly.** Similar-complaint voting scores 0.625 micro F1, which shows the search finds relevant complaints, but I haven't measured how often the top results share the right component.
 - **Try a larger model** on the tool-use questions. The two small models here still told owners their car "has four open recalls", which the tools can't know.
 
 ## How it's checked
-- 113 Python tests and 92 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
+- 153 Python tests and 92 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
 - Python and TypeScript are tested against each other wherever they share logic: labels, masking, the browser model, and vehicle names.
 - Every approach's answers on the test sample, and every model answer in the tool-use evaluation, are published, so each score can be checked without running anything.
 - All models run locally through Ollama, so the whole project costs $0 to run.

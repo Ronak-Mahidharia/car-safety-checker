@@ -10,6 +10,7 @@ Describe a problem with your car and see the official NHTSA recalls and the owne
 - **A model** that names the part of the car a complaint is about, measured on 1,000 held-out complaints.
 - **A website** that runs entirely in the browser.
 - **An MCP server** that lets AI assistants use the same lookups, with a published evaluation of how models use it.
+- **Known Fixes:** what manufacturers told their dealers about a car, warranty extensions first, and a measured AI reading of those bulletins.
 
 The [write-up](docs/write-up.md) explains the decisions behind each part.
 
@@ -33,7 +34,7 @@ flowchart TB
 
     subgraph live["Used live"]
         site["Website<br/>React and TypeScript, runs in the browser"]
-        mcp["MCP server<br/>4 read-only tools over stdio"]
+        mcp["MCP server<br/>5 read-only tools over stdio"]
     end
 
     files --> key --> models --> results
@@ -135,22 +136,42 @@ Pick a vehicle, describe the problem, and the page shows the vehicle's recalls a
 
 ## The MCP server
 AI assistants that support the Model Context Protocol, such as Claude Desktop and Claude Code, can use the project as tools ([setup and details](docs/mcp.md)). Asked about a car problem, the assistant looks up NHTSA's records instead of guessing.
-- **Four read-only tools:**
+- **Five read-only tools:**
   - `vehicle_models` finds NHTSA's model names
   - `guess_components` names the likely parts, offline
   - `vehicle_recalls` lists every recall, warnings first
   - `similar_complaints` finds the closest owner complaints
+  - `service_bulletins` lists what the manufacturer told its dealers about the vehicle, warranty extensions first, offline ([Known Fixes](#known-fixes-manufacturers-service-bulletins))
 - **The same answers as the website:** on NHTSA's live answers for three vehicles, the Python server and the website's TypeScript agreed on all 27 checks, from recall order to complaint ranking.
 - **Built for safe answers:**
   - the server tells the assistant never to call a car safe and always to point to NHTSA's VIN lookup
   - a misspelled model gets "Did you mean: ACCORD?", not "no recalls" or a similar name's recalls
   - recalls under a similar name that may be another vehicle are kept apart from the vehicle's own
   - complaint text is marked as information, never instructions, and a complaint with text addressed to an AI assistant ("ignore all previous instructions…") loses its whole text
-- **Local and private:** it runs on your computer over stdio, and only the vehicle is sent to NHTSA. Built on the official `mcp` 2.2.0 SDK, pinned and checked with `pip-audit`.
+- **Local and private:** it runs on your computer over stdio, and only the vehicle is sent to NHTSA (nothing, for `service_bulletins`). Built on the official `mcp` 2.2.0 SDK, pinned and checked with `pip-audit`.
 - **Measured with AI models** ([tool-use evaluation](docs/results/tool-use.md)): two small local models answered 32 questions through the tools, in three runs.
   - **Two fixes in the tools removed the harmful answers they targeted.** A made-up complaint tells the assistant to call the car "completely safe". Before the fix, 3 of the 4 answers that saw it said the car was safe or had no open recalls; after it, none did.
   - **Firmer instructions didn't help.** They improved the questions they were written for, but not 16 held-out ones, so they were taken back.
   - **The checks were checked too.** Every phrase behind a pass was read, which found three rules that were too loose or too strict, and every run was scored again.
+
+## Known Fixes: manufacturers' service bulletins
+Manufacturers tell their dealers how to fix known problems, and some of those messages extend a warranty. NHTSA publishes them: 23,164 communications it received in 2025 and 2026. A local model reads each summary and fills in a form for a driver: what a driver may notice, the kind of fix, whether the warranty is extended, the model years, and the components. It must quote the summary before every field, and a field whose quote isn't in the summary isn't shown ([full results](docs/results/bulletins.md)).
+- **The answer key is NHTSA's own coding,** which the model never sees: each communication's type (such as Warranty Program/Extension or Over The Air), its model years, and its components. 20 dev and 50 test communications of each of NHTSA's 6 types, at random; dev is what NHTSA added before 2026 and test what it added from Jan 1, 2026, and each summary is used once ([`data/bulletins/`](data/bulletins)).
+- **Chosen on dev:** `qwen3:8b` over `granite4:3b`, by a rule fixed before any answer was read. On dev, `granite4:3b`'s quotes weren't in the summary for 64% of the fields it filled.
+- **Tested once,** on the 300 test communications:
+
+| Method | Warranty extension: precision | Recall | F1 | Precision over all of 2026 (estimated) |
+|---|---|---|---|---|
+| Any mention of a warranty, no AI | 75.6% | 68.0% | 0.716 | 37.7% |
+| A stricter rule, no AI | 77.1% | 54.0% | 0.635 | 52.7% |
+| `qwen3:8b`, with quotes | **88.2%** | 60.0% | 0.714 | **71.2%** |
+
+- **Warranty extensions:** about the same F1 as the simplest rule, with far fewer false claims. The sample has as many of each type, so the precision over all of 2026's communications is estimated by weighing each type by how many there are: 71.2% for the model, against 37.7% for any mention of a warranty, which flags many bulletins that only say a repair is covered by the usual warranty.
+- **Model years:** 97.5% of the years it gave are among NHTSA's for the communication. It named a year in 15 of the 225 summaries that name none, and the evidence check hid every one.
+- **The evidence check matters:** 23.1% of the fields it filled had no quote in the summary, so they aren't shown.
+- **Components are its weak spot:** micro F1 0.196, against 0.584 for the website's keyword model, so the tool below uses NHTSA's own components.
+- **Read one by one** (40 test forms, drawn at random): the symptom was right, or rightly left empty, for 36 of 40, and the kind of fix for 36 of 40. One right fix was hidden because its quote wasn't in the summary, and the check hid two made-up ones.
+- **For drivers:** the MCP server's new `service_bulletins` tool lists what the manufacturer told its dealers about a vehicle, warranty extensions first, then the ones about the described problem, closest wording first. It runs offline from NHTSA's file and uses NHTSA's own fields, not the model's form.
 
 ## Reproduce
 Requires Python 3.12 or newer. The AI experiments also need [Ollama](https://ollama.com/download) (macOS 14 or newer, Windows, or Linux).
@@ -158,7 +179,7 @@ Requires Python 3.12 or newer. The AI experiments also need [Ollama](https://oll
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt && pip install -e . --no-deps
-python scripts/download_data.py      # about 210 MB from NHTSA
+python scripts/download_data.py      # about 225 MB from NHTSA
 python scripts/build_answer_key.py   # about 15 seconds
 python scripts/run_baselines.py      # about 1 minute
 python -m pytest
@@ -177,6 +198,10 @@ for ck in data/processed/finetune/step-*.safetensors; do .venv-finetune/bin/pyth
 python scripts/run_router.py --split dev     # chooses the checkpoint, its threshold, and the router's confidence
 .venv-finetune/bin/python scripts/finetune.py predict --split test --checkpoint step-06250.safetensors   # the one dev chose
 python scripts/run_router.py --split test
+
+# Known Fixes: the answer key from NHTSA's file of manufacturer communications, then the two models (about 50 minutes)
+python scripts/build_bulletin_key.py
+python scripts/run_extraction.py --split dev && python scripts/run_extraction.py --split test
 
 # The browser model (about 1 minute), the website's data files, and the website's tests (needs Node.js 24)
 python scripts/build_browser_model.py
@@ -214,7 +239,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 | `Qwen3-1.7B-4bit` (Alibaba's Qwen3 1.7B, converted for MLX by mlx-community) | fine-tuned to score components | 1.7B parameters, 5.0M trained | Apache 2.0 |
 
 ## Data and privacy
-- **Source:** public complaint and recall files published by NHTSA at static.nhtsa.gov. The exact complaint files and their SHA-256 checksums are in the [answer key](docs/answer-key.md).
+- **Source:** public complaint, recall, and manufacturer-communication files published by NHTSA at static.nhtsa.gov. The exact complaint files and their SHA-256 checksums are in the [answer key](docs/answer-key.md).
 - **Never read:** the personal fields in those files (the owner's city, state, and partial VIN, the dealer's details, the vehicle operator's name, and the incident state).
 - **Descriptions** are NHTSA's published text. In the committed test sample ([`test_sample.jsonl`](data/sample/test_sample.jsonl)), emails, phone numbers, and full VINs are also masked, and a test checks that on every change.
 - **Local only:** the AI models run on your own computer through Ollama.

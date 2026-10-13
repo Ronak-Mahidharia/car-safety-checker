@@ -1,0 +1,419 @@
+{
+ "key": {
+  "source": "TSBS_RECEIVED_2025-2026.zip",
+  "sha256": "3002a198debb0f6c91268cdee7e2d940084548514b845462d1dc3fb14a5296ed",
+  "communications": 23164,
+  "distinct_summaries": 18194,
+  "test_from": "20260101",
+  "seed": 2026,
+  "per_type": {
+   "dev": 20,
+   "test": 50
+  },
+  "pool": {
+   "dev": {
+    "Service Bulletin/Repair Instructions": 7608,
+    "Service Campaign": 1073,
+    "Warranty Program/Extension": 171,
+    "Over The Air": 397,
+    "Emissions": 115,
+    "Other": 1243
+   },
+   "test": {
+    "Service Bulletin/Repair Instructions": 5271,
+    "Service Campaign": 587,
+    "Warranty Program/Extension": 281,
+    "Over The Air": 407,
+    "Emissions": 101,
+    "Other": 940
+   }
+  }
+ },
+ "dev": {
+  "Rules, no AI (the stricter warranty rule)": {
+   "bulletins": 120,
+   "warranty": {
+    "precision": 0.9090909090909091,
+    "recall": 0.5,
+    "f1": 0.6451612903225806,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 0,
+     "Service Campaign": 0,
+     "Warranty Program/Extension": 10,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 1
+    },
+    "estimated_precision_over_pool": 0.5790721300372502
+   },
+   "components": {
+    "bulletins": 94,
+    "none_given": 0,
+    "micro_precision": 0.6513761467889908,
+    "micro_recall": 0.6396396396396397,
+    "micro_f1": 0.6454545454545454
+   },
+   "years": {
+    "bulletins_naming_years": 26,
+    "years_given": 93,
+    "in_nhtsa_years": 89,
+    "named_years": 93,
+    "named_years_given": 93,
+    "bulletins_naming_none": 94,
+    "gave_years_anyway": 0,
+    "precision": 0.956989247311828,
+    "recall_of_named": 1.0
+   },
+   "over_the_air_as_software": {
+    "bulletins": 20,
+    "software_update": 12
+   }
+  },
+  "Rules, no AI (any mention of a warranty)": {
+   "bulletins": 120,
+   "warranty": {
+    "precision": 0.875,
+    "recall": 0.7,
+    "f1": 0.7777777777777777,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 1,
+     "Service Campaign": 0,
+     "Warranty Program/Extension": 14,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 1
+    },
+    "estimated_precision_over_pool": 0.21289461983103605
+   },
+   "components": {
+    "bulletins": 94,
+    "none_given": 0,
+    "micro_precision": 0.6513761467889908,
+    "micro_recall": 0.6396396396396397,
+    "micro_f1": 0.6454545454545454
+   },
+   "years": {
+    "bulletins_naming_years": 26,
+    "years_given": 93,
+    "in_nhtsa_years": 89,
+    "named_years": 93,
+    "named_years_given": 93,
+    "bulletins_naming_none": 94,
+    "gave_years_anyway": 0,
+    "precision": 0.956989247311828,
+    "recall_of_named": 1.0
+   },
+   "over_the_air_as_software": {
+    "bulletins": 20,
+    "software_update": 12
+   }
+  },
+  "qwen3:8b": {
+   "bulletins": 120,
+   "warranty": {
+    "precision": 0.9375,
+    "recall": 0.75,
+    "f1": 0.8333333333333334,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 0,
+     "Service Campaign": 0,
+     "Warranty Program/Extension": 15,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 1
+    },
+    "estimated_precision_over_pool": 0.6735819327731092
+   },
+   "components": {
+    "bulletins": 94,
+    "none_given": 52,
+    "micro_precision": 0.41379310344827586,
+    "micro_recall": 0.21621621621621623,
+    "micro_f1": 0.28402366863905326
+   },
+   "years": {
+    "bulletins_naming_years": 26,
+    "years_given": 70,
+    "in_nhtsa_years": 66,
+    "named_years": 93,
+    "named_years_given": 69,
+    "bulletins_naming_none": 94,
+    "gave_years_anyway": 4,
+    "precision": 0.9428571428571428,
+    "recall_of_named": 0.7419354838709677
+   },
+   "over_the_air_as_software": {
+    "bulletins": 20,
+    "software_update": 16
+   },
+   "evidence": {
+    "symptom": {
+     "filled": 47,
+     "supported": 47
+    },
+    "fix": {
+     "filled": 91,
+     "supported": 75
+    },
+    "warranty_extension": {
+     "filled": 16,
+     "supported": 16
+    },
+    "model_years": {
+     "filled": 30,
+     "supported": 20
+    },
+    "components": {
+     "filled": 72,
+     "supported": 47
+    },
+    "all": {
+     "filled": 256,
+     "supported": 205,
+     "unsupported_share": 0.19921875
+    }
+   },
+   "invalid_answers": 0,
+   "seconds_median": 4.8265,
+   "seconds_total": 632.0
+  },
+  "granite4:3b": {
+   "bulletins": 120,
+   "warranty": {
+    "precision": 0.9,
+    "recall": 0.45,
+    "f1": 0.6,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 0,
+     "Service Campaign": 0,
+     "Warranty Program/Extension": 9,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 1
+    },
+    "estimated_precision_over_pool": 0.5531991373112869
+   },
+   "components": {
+    "bulletins": 94,
+    "none_given": 77,
+    "micro_precision": 0.23076923076923078,
+    "micro_recall": 0.05405405405405406,
+    "micro_f1": 0.08759124087591241
+   },
+   "years": {
+    "bulletins_naming_years": 26,
+    "years_given": 69,
+    "in_nhtsa_years": 66,
+    "named_years": 93,
+    "named_years_given": 69,
+    "bulletins_naming_none": 94,
+    "gave_years_anyway": 4,
+    "precision": 0.9565217391304348,
+    "recall_of_named": 0.7419354838709677
+   },
+   "over_the_air_as_software": {
+    "bulletins": 20,
+    "software_update": 12
+   },
+   "evidence": {
+    "symptom": {
+     "filled": 50,
+     "supported": 39
+    },
+    "fix": {
+     "filled": 114,
+     "supported": 32
+    },
+    "warranty_extension": {
+     "filled": 14,
+     "supported": 10
+    },
+    "model_years": {
+     "filled": 26,
+     "supported": 15
+    },
+    "components": {
+     "filled": 114,
+     "supported": 19
+    },
+    "all": {
+     "filled": 318,
+     "supported": 115,
+     "unsupported_share": 0.6383647798742138
+    }
+   },
+   "invalid_answers": 0,
+   "seconds_median": 2.302,
+   "seconds_total": 307.5
+  }
+ },
+ "chosen": "qwen3:8b",
+ "test": {
+  "Rules, no AI (the stricter warranty rule)": {
+   "bulletins": 300,
+   "warranty": {
+    "precision": 0.7714285714285715,
+    "recall": 0.54,
+    "f1": 0.6352941176470589,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 0,
+     "Service Campaign": 2,
+     "Warranty Program/Extension": 27,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 6
+    },
+    "estimated_precision_over_pool": 0.5268384139990279
+   },
+   "components": {
+    "bulletins": 242,
+    "none_given": 0,
+    "micro_precision": 0.6231884057971014,
+    "micro_recall": 0.549520766773163,
+    "micro_f1": 0.5840407470288624
+   },
+   "years": {
+    "bulletins_naming_years": 75,
+    "years_given": 251,
+    "in_nhtsa_years": 241,
+    "named_years": 251,
+    "named_years_given": 251,
+    "bulletins_naming_none": 225,
+    "gave_years_anyway": 0,
+    "precision": 0.9601593625498008,
+    "recall_of_named": 1.0
+   },
+   "over_the_air_as_software": {
+    "bulletins": 50,
+    "software_update": 22
+   }
+  },
+  "Rules, no AI (any mention of a warranty)": {
+   "bulletins": 300,
+   "warranty": {
+    "precision": 0.7555555555555555,
+    "recall": 0.68,
+    "f1": 0.7157894736842104,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 2,
+     "Service Campaign": 2,
+     "Warranty Program/Extension": 34,
+     "Over The Air": 0,
+     "Emissions": 3,
+     "Other": 4
+    },
+    "estimated_precision_over_pool": 0.3771365412702799
+   },
+   "components": {
+    "bulletins": 242,
+    "none_given": 0,
+    "micro_precision": 0.6231884057971014,
+    "micro_recall": 0.549520766773163,
+    "micro_f1": 0.5840407470288624
+   },
+   "years": {
+    "bulletins_naming_years": 75,
+    "years_given": 251,
+    "in_nhtsa_years": 241,
+    "named_years": 251,
+    "named_years_given": 251,
+    "bulletins_naming_none": 225,
+    "gave_years_anyway": 0,
+    "precision": 0.9601593625498008,
+    "recall_of_named": 1.0
+   },
+   "over_the_air_as_software": {
+    "bulletins": 50,
+    "software_update": 22
+   }
+  },
+  "qwen3:8b": {
+   "bulletins": 300,
+   "warranty": {
+    "precision": 0.8823529411764706,
+    "recall": 0.6,
+    "f1": 0.7142857142857143,
+    "said_by_type": {
+     "Service Bulletin/Repair Instructions": 0,
+     "Service Campaign": 1,
+     "Warranty Program/Extension": 30,
+     "Over The Air": 0,
+     "Emissions": 0,
+     "Other": 3
+    },
+    "estimated_precision_over_pool": 0.7121736926586127
+   },
+   "components": {
+    "bulletins": 242,
+    "none_given": 161,
+    "micro_precision": 0.3904761904761905,
+    "micro_recall": 0.13099041533546327,
+    "micro_f1": 0.19617224880382775
+   },
+   "years": {
+    "bulletins_naming_years": 75,
+    "years_given": 238,
+    "in_nhtsa_years": 232,
+    "named_years": 251,
+    "named_years_given": 238,
+    "bulletins_naming_none": 225,
+    "gave_years_anyway": 15,
+    "precision": 0.9747899159663865,
+    "recall_of_named": 0.9482071713147411
+   },
+   "over_the_air_as_software": {
+    "bulletins": 50,
+    "software_update": 33
+   },
+   "evidence": {
+    "symptom": {
+     "filled": 95,
+     "supported": 94
+    },
+    "fix": {
+     "filled": 221,
+     "supported": 186
+    },
+    "warranty_extension": {
+     "filled": 35,
+     "supported": 34
+    },
+    "model_years": {
+     "filled": 90,
+     "supported": 62
+    },
+    "components": {
+     "filled": 177,
+     "supported": 99
+    },
+    "all": {
+     "filled": 618,
+     "supported": 475,
+     "unsupported_share": 0.23139158576051777
+    }
+   },
+   "invalid_answers": 0,
+   "seconds_median": 4.599,
+   "seconds_total": 1554.2
+  }
+ },
+ "hand_check": {
+  "model": "qwen3:8b",
+  "bulletins": 40,
+  "rule": "Written before judging, from the form's own definitions. Each form as shown, after the evidence check. Symptom: right when it says, in plain words, what the summary says a driver may notice; wrong when it isn't that (not in the summary, or something only a technician sees); rightly empty when the summary says nothing a driver notices; wrongly empty when it does and the form shows nothing. Fix: right when its kind fits the remedy the summary states; wrong when it doesn't; rightly empty (not stated) when the summary states no remedy; wrongly empty when it does and the form shows not stated. Read one by one by Claude, Oct 13, 2026.",
+  "counts": {
+   "symptom": {
+    "right": 11,
+    "rightly empty": 25,
+    "wrong": 2,
+    "wrongly empty": 2
+   },
+   "fix": {
+    "right": 24,
+    "rightly empty": 12,
+    "wrong": 3,
+    "wrongly empty": 1
+   }
+  }
+ }
+}

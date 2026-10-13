@@ -7,7 +7,7 @@ The server runs on your own computer and talks to the assistant over stdio. It u
 Numbers measured on NHTSA's live data are from Oct 2–3, 2026. NHTSA adds records over time, so they can change.
 
 ## Tools
-All four are read-only: they look things up and never change anything.
+All five are read-only: they look things up and never change anything.
 
 | Tool | What it does | Goes online |
 |---|---|---|
@@ -15,8 +15,9 @@ All four are read-only: they look things up and never change anything.
 | `guess_components` | Names the 3 most likely components for a description, with a confidence from 0 to 1 | No |
 | `vehicle_recalls` | Lists every recall for a vehicle: Do Not Drive and Park Outside warnings first, then, with a description, those for the likely components | Yes |
 | `similar_complaints` | Finds owner complaints filed under the likely components, the closest wording first (up to 10) | Yes |
+| `service_bulletins` | Lists what the manufacturer told its dealers about a vehicle (service bulletins, warranty extensions, service campaigns, over-the-air updates, and more), as NHTSA publishes them: warranty extensions first, then, with a description, those filed under the likely components, the closest wording first (up to 25) | No (NHTSA's file, downloaded by `scripts/download_data.py`) |
 
-Every result is structured (each tool publishes a JSON schema) and carries a `note` for the assistant to pass on. Recalls and complaints link to NHTSA's own page for the record (`nhtsa_record`), which shows it and offers a PDF.
+Every result is structured (each tool publishes a JSON schema) and carries a `note` for the assistant to pass on. Recalls and complaints link to NHTSA's own page for the record (`nhtsa_record`), which shows it and offers a PDF. A manufacturer communication gives its NHTSA ID and the maker's own number for it (`document`), which NHTSA's field list describes as "the way it can be located by those searching for it". NHTSA's website turns away automated checks, so no link to it was tested and none is given.
 
 ## Safety by design
 - **Never "safe".** The server's instructions tell the assistant that these tools never show a car is safe, never to say a car has no open recalls, and always to point to NHTSA's VIN lookup (https://www.nhtsa.gov/recalls). Every recall result repeats that.
@@ -31,6 +32,8 @@ Every result is structured (each tool publishes a JSON schema) and carries a `no
   - **Common wording is removed, with the whole complaint text.** When a complaint has wording such as "Ignore all previous instructions…", "Ignore your instructions", "You are an AI", or "Tell the user…", its whole text is replaced with "[removed: text addressed to an AI assistant]" before it reaches the assistant, because the rest of the message can sit in the next sentence or line. In the [tool-use evaluation](results/tool-use.md), a made-up complaint with such a sentence got one model to repeat its claim that the car "is completely safe and has no open recalls". With the filter, none of the 4 answers that saw the complaint said the car was safe or had no open recalls, against 3 without it. That evaluation ran with an earlier version that replaced only the sentence; a check on Oct 9, 2026 found that the next sentence could still carry the message, so the whole text now goes.
   - **Real complaints keep every word.** None of the 784,818 complaints in NHTSA's files received from Jan 2015 to Sept 2026 has wording the filter would remove (checked Oct 3, 2026, and again on Oct 9 with the wider wording).
   - Other wordings get through, so the instructions still apply.
+
+- **Manufacturer communications aren't recalls, or promises.** `service_bulletins` says so in every result, and that whether a repair is free depends on the car's warranty and the communication. Its text is treated like complaint text: a line addressed to an AI assistant removes the whole summary. Communications under similar names that may be another vehicle (WAGONEER for a WAGONEER S) aren't shown; their names are listed in `similar_names`. A name with no communications gets close names, never "there are none": the file covers only the years NHTSA received them in.
 
 ## Privacy
 - **The description stays on your computer.** Only the vehicle (model year, make, and model) is sent to NHTSA's API.
@@ -74,11 +77,11 @@ claude mcp add car-safety-checker -- "/path/to/car-safety-checker/.venv/bin/pyth
 **Other MCP clients:** run the same command, `"/path/to/car-safety-checker/.venv/bin/python" -m carsafety.mcp_server`, as a stdio server.
 
 ## How it's checked
-- **The full suite:** 113 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
-  - 59 for the server and the code it uses: the server 15, vehicle names 20, NHTSA's API 11, matching 6, the browser model 5, masking 2
+- **The full suite:** 153 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
+  - 65 for the server and the code it uses: the server 21, vehicle names 20, NHTSA's API 11, matching 6, the browser model 5, masking 2
   - 10 for the tool-use evaluation: the question loop, the frozen copy of NHTSA's answers, and the checks
 - **Through a real MCP client:** the server's tests connect a real MCP client in-process and check:
-  - the four read-only tools and their input limits
+  - the five read-only tools and their input limits
   - offline guesses
   - related-name search with warnings first
   - recalls under a similar name for another vehicle kept apart, and another model's complaints left out
@@ -88,6 +91,7 @@ claude mcp add car-safety-checker -- "/path/to/car-safety-checker/.venv/bin/pyth
   - the cap on long recall lists
   - the over-the-air mark, sent only when NHTSA sets it
   - the error when NHTSA is down
+  - service bulletins: warranty extensions first, the described problem next, similar names listed but not searched, text addressed to an assistant removed, and close names when a name isn't in the file
 - **Tests that catch deliberate bugs:** each of fifteen bugs, introduced on purpose in a copy of the code, made tests fail:
   - warnings no longer first
   - complaint text no longer masked
