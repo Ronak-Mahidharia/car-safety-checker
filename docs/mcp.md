@@ -77,7 +77,7 @@ claude mcp add car-safety-checker -- "/path/to/car-safety-checker/.venv/bin/pyth
 **Other MCP clients:** run the same command, `"/path/to/car-safety-checker/.venv/bin/python" -m carsafety.mcp_server`, as a stdio server.
 
 ## How it's checked
-- **The full suite:** 145 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
+- **The full suite:** 153 Python tests (pytest) pass. They need no network, because NHTSA's answers are faked. They include:
   - 65 for the server and the code it uses: the server 21, vehicle names 20, NHTSA's API 11, matching 6, the browser model 5, masking 2
   - 10 for the tool-use evaluation: the question loop, the frozen copy of NHTSA's answers, and the checks
 - **Through a real MCP client:** the server's tests connect a real MCP client in-process and check:

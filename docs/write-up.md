@@ -29,6 +29,21 @@ Retrieval helped the AI a lot: showing a model the 8 most similar past complaint
 
 The AI still had a job to do. For 484 of the 1,000 test complaints, the vehicle has a recall for the components NHTSA recorded. `qwen3:8b` with similar complaints and keyword suggestions found 84.6% of those recalls, against 78.1% for the keyword model, at the cost of showing more extra ones. So the right choice depends on the goal: the blend for accuracy, the AI hybrid when missing a recall matters most.
 
+## Until a small model learned the labels too
+The keyword model won because it had learned from 200,000 labeled complaints, and the AI models had seen none. So I fine-tuned a small one, `Qwen3 1.7B` in 4 bits, on this Mac with Apple's MLX.
+
+A first trial taught it to write the component names, from 2,000 complaints. It scored 0.42 micro F1 on 200 dev complaints, against 0.73 for the keyword model on the same ones: it wrote near-misses such as "EXTERIOR LIGHTING SYSTEM", and some components never came up in its examples. So the final version doesn't write anything. A classification head scores each of the 31 components, and LoRA adapters on its last 16 layers learn from 50,000 complaints from the training years. The run took 3.1 hours, with a peak of 9.5 GB of memory.
+
+| Approach, on the 1,000 test complaints | Micro F1 | Macro F1 | Right recalls found | Seconds per complaint |
+|---|---|---|---|---|
+| Keyword model | 0.718 | 0.533 | 78.1% | under 0.01 |
+| Fine-tuned `Qwen3 1.7B` | **0.761** | **0.661** | 83.4% | 0.11 |
+| `qwen3:8b` hybrid | 0.694 | 0.607 | **84.6%** | 4.16 |
+
+Its checkpoint and threshold were chosen on the 2024 dev complaints, and the test sample ran once. It's now the most accurate approach here, and it found nearly as many right recalls as the 8-billion-parameter hybrid, about 38 times faster.
+
+I also built a router: the keyword model answers when it's sure, and the fine-tuned model takes the rest. On these complaints it didn't help. The confidence chosen on dev sent 710 of the 1,000 complaints to the fine-tuned model and scored a little lower than that model alone (0.757 against 0.761). A router only pays when the bigger model is much slower or costs money per answer, so here it's a way to trade a little accuracy for speed.
+
 ## Shipping it without a server
 A live demo that calls a large model costs money for every visitor. A keyword model doesn't have to.
 - I shrank the keyword model from 78.6 MB to about 1 MB: 20,000 terms instead of 272,088, chosen on the 2024 data, and 8-bit weights. It still scores 0.719 micro F1 on all 122,100 test complaints, the same as the full model.
@@ -85,7 +100,7 @@ The rule I cared most about: every field must quote the summary, and a field who
 - **Try a larger model** on the tool-use questions. The two small models here still told owners their car "has four open recalls", which the tools can't know.
 
 ## How it's checked
-- 145 Python tests and 92 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
+- 153 Python tests and 92 website tests run on every change, in GitHub Actions pinned to exact commits, with read-only permissions.
 - Python and TypeScript are tested against each other wherever they share logic: labels, masking, the browser model, and vehicle names.
 - Every approach's answers on the test sample, and every model answer in the tool-use evaluation, are published, so each score can be checked without running anything.
 - All models run locally through Ollama, so the whole project costs $0 to run.
