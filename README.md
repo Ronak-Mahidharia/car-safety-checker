@@ -71,13 +71,15 @@ Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full 
 |---|---|---|---|---|
 | Keyword model (TF-IDF + logistic regression), the baseline | 0.718 | 0.533 | 55.1% | under 0.01 |
 | Similar-complaint voting (20 nearest complaints) | 0.625 | 0.439 | 41.7% | under 0.01 |
-| **Blend** of the keyword model and the voting, no AI | **0.727** | 0.520 | 55.8% | under 0.01 |
+| **Blend** of the keyword model and the voting, no AI | 0.727 | 0.520 | 55.8% | under 0.01 |
 | `granite4:3b` on its own | 0.547 | 0.381 | 40.7% | 0.34 |
 | `granite4:3b` with similar examples (RAG) | 0.668 | 0.524 | 54.6% | 1.49 |
-| `granite4:3b` **hybrid** (RAG plus the keyword model's suggestions) | 0.701 | 0.556 | **57.5%** | 1.59 |
+| `granite4:3b` **hybrid** (RAG plus the keyword model's suggestions) | 0.701 | 0.556 | 57.5% | 1.59 |
 | `qwen3:8b` on its own | 0.532 | 0.462 | 23.2% | 1.06 |
 | `qwen3:8b` with similar examples (RAG) | 0.669 | 0.570 | 34.8% | 3.84 |
-| `qwen3:8b` **hybrid** | 0.694 | **0.607** | 40.7% | 4.16 |
+| `qwen3:8b` **hybrid** | 0.694 | 0.607 | 40.7% | 4.16 |
+| **Fine-tuned** `Qwen3 1.7B` (LoRA and a classification head, trained on this Mac) | **0.761** | **0.661** | **58.2%** | 0.11 |
+| Router: the keyword model when it's sure, else the fine-tuned model | 0.757 | 0.642 | 56.7% | about 0.08 (from the two models' times) |
 
 **Finding the right recalls.** For 484 of the 1,000 complaints, the vehicle has at least one NHTSA recall for the components NHTSA recorded:
 
@@ -88,14 +90,26 @@ Scored on the fixed sample of 1,000 complaints received from 2025 onward ([full 
 | `granite4:3b` hybrid | 76.1% | **87.2%** |
 | `qwen3:8b` with RAG | 83.1% | 75.1% |
 | `qwen3:8b` hybrid | **84.6%** | 76.0% |
+| Fine-tuned `Qwen3 1.7B` | 83.4% | 84.3% |
+| Router | 83.3% | 83.8% |
 
 ## What the results show
 - **No single approach wins everything**, so the right choice depends on the goal.
-- **Most accurate overall: the blend, with no AI.** Averaging the keyword model (75%) with similar-complaint voting (25%) reached 0.727 micro F1, against 0.718 for the keyword model alone, and it answers in under a hundredth of a second.
-- **Best for what drivers need most: the `qwen3:8b` hybrid.** It found 84.6% of the right recalls (against 78.1% for the keyword model), at the cost of showing more extra ones. It's also the best on rare components (macro F1 0.607 against 0.533).
-- **Most precise: the `granite4:3b` hybrid.** It has the highest share of fully correct answers (57.5%), and 87.2% of the recalls it shows are right.
+- **Most accurate overall: a small model fine-tuned on this Mac** ([below](#fine-tuning-and-routing)). It has the best micro F1 (0.761), macro F1 (0.661), and share of fully correct answers (58.2%), and found 83.4% of the right recalls, in about a tenth of a second per complaint.
+- **Most accurate with no AI: the blend.** Averaging the keyword model (75%) with similar-complaint voting (25%) reached 0.727 micro F1, against 0.718 for the keyword model alone, and it answers in under a hundredth of a second.
+- **The most right recalls: the `qwen3:8b` hybrid.** It found 84.6% of the right recalls (against 78.1% for the keyword model), at the cost of showing more extra ones, and it takes about 4 seconds per complaint.
+- **The most precise recalls: the `granite4:3b` hybrid.** 87.2% of the recalls it shows are right.
 - **Each step helped the AI.** For `granite4:3b`, micro F1 went from 0.547 on its own to 0.668 with RAG and 0.701 as a hybrid. For `qwen3:8b`, it went from 0.532 to 0.669 to 0.694.
 - **Model size isn't everything.** The 3.4-billion-parameter `granite4:3b` kept pace with the 8.2-billion-parameter `qwen3:8b` and ran about 2.6 times faster.
+
+## Fine-tuning and routing
+A small open model, trained on this Mac to name the components, and a router that uses it only when the keyword model isn't sure ([full results](docs/results/router.md)).
+- **The model:** `Qwen3 1.7B` in 4 bits (Apache-2.0), with LoRA adapters on its last 16 layers and a classification head that scores each of the 31 components, so it never has to write a component's name ([`scripts/finetune.py`](scripts/finetune.py), with Apple's MLX). The base model stays frozen; 5.0 million numbers are trained.
+- **Training:** 50,000 complaints from the training years (received before 2024), 6,250 steps, 3.1 hours on an Apple M5, with a peak of 9.5 GB of memory.
+- **Chosen on dev only** (the 5,000 complaints received in 2024, by a rule fixed first): each saved checkpoint at its best threshold. It kept improving, from micro F1 0.726 after 1,000 steps to 0.770 at the end, against 0.741 for the keyword model on the same complaints.
+- **Tested once:** the best micro F1, macro F1, and exact match of every approach here, and 83.4% of the right recalls, in 108 ms per complaint (batches of 16 on the Mac's GPU), against 4.16 seconds for the `qwen3:8b` hybrid.
+- **The router doesn't beat the model it routes to.** It answers with the keyword model when that model's top component reaches a confidence chosen on dev (0.95), and sends the rest, 710 of the 1,000, to the fine-tuned model: micro F1 0.757 against 0.761. On dev, a lower confidence sends fewer: at 0.5, 19.9% go to the fine-tuned model, for a micro F1 of 0.758 against its 0.770. So it trades a little accuracy for speed.
+- **Not used live yet:** the website and the MCP server still use the 1 MB keyword model. The fine-tuned model needs Apple silicon (MLX), and its trained adapter isn't published.
 
 ## The model in the browser
 The website runs a small version of the keyword model inside the visitor's browser, so it needs no server and costs nothing to host ([details](docs/results/browser-model.md)):
@@ -155,6 +169,15 @@ python scripts/build_index.py        # 30 to 40 minutes on an Apple M5
 python scripts/run_ai_eval.py --split dev --models granite4:3b qwen3:8b --modes alone rag hybrid --prompt v1 v2
 python scripts/run_ai_eval.py --split test --models granite4:3b qwen3:8b --modes knn blend alone rag hybrid --prompt auto   # about 3.5 hours
 
+# Fine-tuning and the router (Apple silicon only: about 3 hours and 9.5 GB on an Apple M5; after build_index.py,
+# which writes the 5,000 dev complaints)
+python3.13 -m venv .venv-finetune && .venv-finetune/bin/pip install -r requirements-finetune.txt
+.venv-finetune/bin/python scripts/finetune.py train
+for ck in data/processed/finetune/step-*.safetensors; do .venv-finetune/bin/python scripts/finetune.py predict --split dev --checkpoint "$(basename "$ck")"; done
+python scripts/run_router.py --split dev     # chooses the checkpoint, its threshold, and the router's confidence
+.venv-finetune/bin/python scripts/finetune.py predict --split test --checkpoint step-06250.safetensors   # the one dev chose
+python scripts/run_router.py --split test
+
 # The browser model (about 1 minute), the website's data files, and the website's tests (needs Node.js 24)
 python scripts/build_browser_model.py
 python scripts/build_vehicle_index.py && python scripts/build_web_fixtures.py
@@ -188,6 +211,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 | `nomic-embed-text` | embeddings | 137M parameters | Apache 2.0 |
 | `granite4:3b` (IBM) | naming components | 3.4B parameters | Apache 2.0 |
 | `qwen3:8b` (Alibaba) | naming components | 8.2B parameters | Apache 2.0 |
+| `Qwen3-1.7B-4bit` (Alibaba's Qwen3 1.7B, converted for MLX by mlx-community) | fine-tuned to score components | 1.7B parameters, 5.0M trained | Apache 2.0 |
 
 ## Data and privacy
 - **Source:** public complaint and recall files published by NHTSA at static.nhtsa.gov. The exact complaint files and their SHA-256 checksums are in the [answer key](docs/answer-key.md).
@@ -201,6 +225,7 @@ Every approach's answers on the test sample are published in [`docs/results/pred
 - **It shows what NHTSA has on file for a model and year,** not whether a recall covers a particular car. Only a VIN lookup can tell that: https://www.nhtsa.gov/recalls.
 - **The component guess can be wrong.** On 1,000 complaints from 2025 and 2026, the website's model had one of NHTSA's components as its top guess 83.1% of the time. Recalls are never hidden because of a guess.
 - **NHTSA's data changes.** The downloaded files and the measurements here are from late September and early October 2026.
+- **The fine-tuned model runs only on Apple silicon** (MLX), and it isn't used by the website or the MCP server.
 
 ## License
 Code: MIT (see [LICENSE](LICENSE)). Data: public records published by NHTSA. Models: see the table above.
